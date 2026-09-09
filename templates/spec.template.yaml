@@ -1,0 +1,117 @@
+# TD Factory build contract
+# Written by the Architect, executed by the Builder, reviewed by a human in between.
+# Every field is required unless marked optional. Empty is not the same as absent.
+
+slug: my-project              # kebab-case, matches the folder name
+title: My Project
+created: 2026-09-08
+td_build: "2025.33070"
+
+# ---------------------------------------------------------------------------
+# WHAT and WHY. Prose, for the human and for the Builder's judgment calls.
+# ---------------------------------------------------------------------------
+intent: >
+  Two to five sentences. What the piece does, what it should feel like,
+  where it will be seen. Aesthetic direction lives here and nowhere else.
+
+references: []                # optional: urls, artist names, prior projects
+
+# ---------------------------------------------------------------------------
+# OUTPUT
+# ---------------------------------------------------------------------------
+output:
+  mode: realtime              # realtime | render
+  resolution: [1920, 1080]
+  target_fps: 60
+  fps_tolerance: 0.9          # acceptance floor = target_fps * tolerance
+  final_op: /project1/out_final
+
+# ---------------------------------------------------------------------------
+# INPUTS. What drives the piece. Empty list means fully autonomous.
+# Always declare a mock so the visual pipeline can be finished before the
+# real signal or hardware exists.
+# ---------------------------------------------------------------------------
+inputs:
+  - name: eeg
+    kind: chop                # chop | top | dat | osc | midi | audio
+    source: mock              # mock | osc | file | device
+    channels: [alpha, beta]
+    range: [0.0, 1.0]         # normalized at the boundary, always
+    mock: noise               # noise | file | constant
+    notes: replace with the real stream once hardware is available
+
+# ---------------------------------------------------------------------------
+# ANCHORS. Real paths in the live project. The Builder fills the ones it
+# discovers; the Architect proposes the layout.
+# ---------------------------------------------------------------------------
+anchors:
+  root: /project1
+
+# ---------------------------------------------------------------------------
+# BUDGET. Hard ceilings. Going over is a stop condition, not a warning.
+# ---------------------------------------------------------------------------
+budget:
+  max_ops_total: 40
+  max_ops_root: 20
+  max_gpu_cook_ms: 8
+  max_stages: 6
+
+# ---------------------------------------------------------------------------
+# PIPELINE. 3 to 6 stages, ordered. One responsibility each.
+# The Builder decides which operators to use. The spec never names them
+# unless a specific operator is a genuine requirement.
+# ---------------------------------------------------------------------------
+pipeline:
+  - id: src_cloud
+    responsibility: one sentence, what this stage produces
+    consumes: []              # ids of upstream stages
+    produces: out_src_cloud   # the Null this stage terminates on
+    reuse: null               # a lib/ component id, or null
+    params:                   # custom parameters exposed on this container
+      - name: Density
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.5
+        help: how many points are visible
+    budget_ops: 12
+
+  - id: fx_displace
+    responsibility: ...
+    consumes: [src_cloud]
+    produces: out_fx_displace
+    reuse: null
+    params: []
+    budget_ops: 10
+
+# ---------------------------------------------------------------------------
+# ACCEPTANCE. Machine checkable only. The Builder walks this list item by
+# item and records a result for each. No prose criteria here.
+# ---------------------------------------------------------------------------
+acceptance:
+  - id: renders
+    check: capture /project1/out_final returns quality pass
+  - id: no_errors
+    check: get_op_errors on /project1 recursive returns empty
+  - id: perf
+    check: fps >= target_fps * fps_tolerance with all inputs active
+  - id: params_respond
+    check: every custom parameter swept min/mid/max, no error and no black frame
+  - id: mock_swap
+    check: switching input eeg from mock to osc changes the visual within 1 second
+
+# ---------------------------------------------------------------------------
+# RISKS. What is most likely to fail, and the fallback.
+# A spec with an empty risks list has not been thought about.
+# ---------------------------------------------------------------------------
+risks:
+  - risk: point count may exceed the GPU budget on the target machine
+    fallback: expose a decimation parameter and cap the default
+
+# ---------------------------------------------------------------------------
+# DELIVERABLES
+# ---------------------------------------------------------------------------
+deliverables:
+  - project.toe
+  - network/<slug>.tdxn
+  - captures/final.png
+  - build-report.md

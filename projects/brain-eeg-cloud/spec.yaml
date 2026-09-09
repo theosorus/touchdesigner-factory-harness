@@ -1,0 +1,119 @@
+# TD Factory build contract
+# Exemple rempli, sert aussi de référence pour l'Architecte.
+
+slug: brain-eeg-cloud
+title: Brain EEG Cloud
+created: 2026-09-08
+td_build: "2025.33070"
+
+intent: >
+  Un cerveau en nuage de points qui respire et se déforme selon un signal EEG.
+  Au repos la forme est lisible et stable, sous excitation elle se disperse et
+  se recolore vers le chaud. Destiné à une projection frontale unique, vue de
+  loin, tournant en continu pendant des heures.
+
+references: []
+
+output:
+  mode: realtime
+  resolution: [1920, 1080]
+  target_fps: 60
+  fps_tolerance: 0.9
+  final_op: /project1/out_final
+
+inputs:
+  - name: eeg
+    kind: chop
+    source: mock
+    channels: [alpha, beta]
+    range: [0.0, 1.0]
+    mock: noise
+    notes: remplacer par le flux OSC du casque une fois le matériel disponible
+
+anchors:
+  root: /project1
+
+budget:
+  max_ops_total: 40
+  max_ops_root: 20
+  max_gpu_cook_ms: 8
+  max_stages: 6
+
+pipeline:
+  - id: src_cloud
+    responsibility: charger le maillage du cerveau et le convertir en nuage de points GPU via POPs
+    consumes: []
+    produces: out_src_cloud
+    reuse: null
+    params:
+      - name: Density
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.6
+        help: proportion de points conservés, baisser si le GPU sature
+    budget_ops: 10
+
+  - id: ctrl_signal
+    responsibility: normaliser et lisser les bandes EEG en deux canaux 0 à 1 exploitables
+    consumes: []
+    produces: out_ctrl_signal
+    reuse: null
+    params:
+      - name: Smoothing
+        style: Float
+        range: [0.0, 0.99]
+        default: 0.9
+        help: lissage exponentiel, plus haut égale plus inerte
+    budget_ops: 6
+
+  - id: fx_displace
+    responsibility: déplacer les points selon un bruit modulé par le canal beta
+    consumes: [src_cloud, ctrl_signal]
+    produces: out_fx_displace
+    reuse: null
+    params:
+      - name: Displacement
+        style: Float
+        range: [0.0, 2.0]
+        default: 0.5
+        help: amplitude de dispersion des points
+    budget_ops: 8
+
+  - id: render
+    responsibility: rendre le nuage avec teinte pilotée par alpha et composer la sortie finale
+    consumes: [fx_displace, ctrl_signal]
+    produces: out_final
+    reuse: null
+    params:
+      - name: Warmth
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.3
+        help: décalage de teinte du froid vers le chaud
+    budget_ops: 12
+
+acceptance:
+  - id: renders
+    check: capture /project1/out_final returns quality pass
+  - id: no_errors
+    check: get_op_errors on /project1 recursive returns empty
+  - id: perf
+    check: fps >= 54 with the mock eeg input active
+  - id: params_respond
+    check: Density Displacement Warmth Smoothing swept min mid max, no error and no black frame
+  - id: shape_readable
+    check: at Displacement 0 the capture is not flat and not black, at Displacement 2 the capture differs from the one at 0
+  - id: stability
+    check: fps after 10 minutes of continuous run is within 5 percent of the initial measurement
+
+risks:
+  - risk: le nombre de points du maillage peut dépasser le budget GPU
+    fallback: Density expose la décimation, défaut à 0.6 et non 1.0
+  - risk: le signal EEG réel sera bruité et hors bornes contrairement au mock
+    fallback: clamp et normalisation dans ctrl_signal, jamais en aval
+
+deliverables:
+  - project.toe
+  - network/brain-eeg-cloud.tdxn
+  - captures/final.png
+  - build-report.md

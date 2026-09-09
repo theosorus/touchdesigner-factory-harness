@@ -1,0 +1,27 @@
+# Mémoire d'erreurs de TD Factory, partagée entre tous les agents et tous les harnesses.
+# Une entrée entre ici seulement quand la cause racine est identifiée et le fix vérifié.
+# Protocole complet : .claude/skills/td-auto-improve/SKILL.md
+#
+# Lire : grep sur les tags avant un build, grep sur le message d'erreur exact en cas d'erreur.
+# Écrire : dédup d'abord, mettre à jour une entrée existante plutôt que dupliquer.
+# Ce fichier n'appartient à aucun agent en particulier : tout agent le lit et l'écrit.
+
+lessons: []
+
+# Exemple de forme attendue:
+#
+# - id: pop-attribute-copy-cook
+#   date: 2026-09-08
+#   hits: 1
+#   context: brain-eeg-cloud, étage fx_displace
+#   symptom: >
+#     POP Attribute Copy error: attribute "Cd" not found in second input
+#   cause: >
+#     Le second input attend un POP avec l'attribut déjà déclaré ; un POP vide
+#     n'expose pas l'attribut et le cook échoue.
+#   fix: >
+#     Déclarer l'attribut avec un POP Attribute Add avant de le consommer.
+#     Vérifié : get_op_errors vide + capture pass.
+#   prevention: toujours déclarer un attribut avant de le consommer
+#   tags: [pop, attribute, cook]
+#   source: claude-code

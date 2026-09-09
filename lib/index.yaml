@@ -1,0 +1,22 @@
+# Registre des composants réutilisables.
+# Un composant entre ici seulement quand il a été livré dans un projet,
+# qu'il est générique, et qu'il est paramétré (pas de valeur en dur).
+#
+# Le Builder lit ce fichier avant de créer quoi que ce soit.
+
+version: 1
+components: []
+
+# Exemple de forme attendue:
+#
+# - id: feedback_trails
+#   file: components/feedback_trails.tdxn
+#   family: TOP
+#   summary: boucle de feedback avec décroissance, rotation et zoom paramétrables
+#   params: [Decay, Rotate, Zoom, Blur]
+#   inputs: 1
+#   outputs: 1
+#   cost_gpu_ms: 1.2
+#   tested_on: "2025.33070"
+#   born_in: projects/kandinsky-wall
+#   caveats: gain au dessus de 0.97 diverge en quelques secondes
