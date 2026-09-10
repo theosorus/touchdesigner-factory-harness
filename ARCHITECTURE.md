@@ -1,71 +1,92 @@
-# TD Factory : architecture
+# TD Factory: architecture
 
-Une usine à projets TouchDesigner pilotée par deux agents. Tu écris une phrase, tu récupères un `.toe` qui tourne, versionné et vérifié.
+A factory for TouchDesigner projects driven by two agent roles. You write a sentence, you get
+a running `.toe`, version-controlled and verified.
 
-## Le principe
+## The principle
 
-Le problème d'un agent qui construit du TouchDesigner tout seul, c'est qu'il n'a pas de contrat. Il improvise, il empile des opérateurs, et au bout de 40 tours tu as un réseau que personne ne peut relire. La solution est de couper en deux, avec un artefact écrit entre les deux.
+The problem with an agent building TouchDesigner on its own is that it has no contract. It
+improvises, piles up operators, and forty turns later you have a network nobody can read. The
+fix is to cut the work in two, with a written artifact in between.
 
 ```
-prompt humain
+human prompt
     |
     v
-[Agent 1 : Architecte]  ------> projects/<slug>/spec.yaml   (contrat, relu par toi)
+[Agent 1: Architect]  ------> projects/<slug>/spec.yaml   (contract, reviewed by you)
     |                                    |
-   pas de MCP,                           |
-   pas de TD ouvert                      v
-                            [Agent 2 : Builder] -----> session TD vivante via Envoy
+   no MCP,                               |
+   no TD open                            v
+                            [Agent 2: Builder] -----> live TD session over Envoy
                                          |                     |
                                          v                     v
                               build-report.md          project.toe + .tdxn + captures
 ```
 
-L'artefact `spec.yaml` est le point de contrôle. Tant qu'il n'est pas validé, rien n'est construit. Et une fois validé, il survit à la session : un autre agent, un sub-agent, ou toi trois semaines plus tard peut le rejouer.
+`spec.yaml` is the checkpoint. Until it is approved, nothing is built. Once approved it
+outlives the session: another agent, a sub-agent, or you three weeks later can replay it.
 
-## Pourquoi deux agents et pas un
+## Why two roles rather than one
 
-| | Architecte | Builder |
+| | Architect | Builder |
 |---|---|---|
-| Entrée | une phrase floue | un spec.yaml validé |
-| Sortie | un spec.yaml | un projet TD qui tourne |
-| Outils | fichiers, web search, lecture de `lib/` | MCP Envoy, fichiers |
-| TD ouvert | non | oui |
-| Contexte | large, exploratoire | étroit, exécutif |
-| Mode | plan mode | exécution |
-| Coût si raté | tu relis 60 lignes de YAML | tu jettes 40 minutes de build |
+| Input | a vague sentence | a validated spec.yaml |
+| Output | a spec.yaml | a running TD project |
+| Tools | files, web search, reading `lib/` | Envoy MCP, files |
+| TD open | no | yes |
+| Context | wide, exploratory | narrow, executive |
+| Mode | plan mode | execution |
+| Cost of failure | you re-read 60 lines of YAML | you throw away 40 minutes of build |
 
-Séparer, c'est déplacer le coût de l'erreur du build vers la relecture. Un spec faux se corrige en 30 secondes.
+Splitting moves the cost of a mistake from the build to the review. A wrong spec is fixed in
+thirty seconds.
 
-## Les sept couches
+The two roles may share one session — that is cheaper in context. What must not be skipped is
+the gate: the validator exits 0, **and** a human approves in writing. An agent never approves
+its own spec, and silence is not approval. When both roles share a session, the Builder
+re-reads `spec.yaml` from disk before building: from that point the file is the contract, not
+the memory of having written it.
 
-**1. Le contrat (`templates/spec.template.yaml`)**
-Le schéma que l'Architecte remplit. Il force les décisions qui coûtent cher à changer après coup : résolution, fps cible, budget d'opérateurs, entrées, paramètres exposés, découpage en étages, critères d'acceptation.
+## The seven layers
 
-**2. Les conventions (`.claude/rules/`)**
-Chargées dans chaque conversation. Nommage, layout, structure de containers, règles Python TD. C'est ce qui rend deux projets générés à trois mois d'écart lisibles de la même façon.
+**1. The contract (`templates/spec.template.yaml`)**
+The schema the Architect fills in. It forces the decisions that are expensive to change later:
+resolution, target fps, operator budget, inputs, exposed parameters, stage breakdown,
+acceptance criteria.
 
-**3. Les skills (`.claude/skills/`)**
-`td-architect` et `td-builder`, chargées à la demande. Elles contiennent les workflows, pas les conventions.
+**2. The conventions (`.claude/rules/`)**
+Loaded in every conversation. Naming, layout, container structure, TD Python rules. This is
+what makes two projects generated three months apart read the same way.
 
-**4. La bibliothèque (`lib/`)**
-Le vrai levier de long terme. Chaque composant qui marche est exporté en TDXN et indexé. Au projet 10, le Builder assemble plus qu'il ne construit. C'est ce qui fait qu'une usine devient rentable.
+**3. The skills (`.claude/skills/`)**
+`td-architect` and `td-builder`, loaded on demand. They hold workflows, not conventions.
 
-**5. Les projets (`projects/<slug>/`)**
-Un dossier par projet, autonome, avec son spec, son `.toe`, son code externalisé, ses captures et son rapport de build.
+**4. The library (`lib/`)**
+The real long-term lever. Every component that works is exported as TDXN and indexed. By
+project 10, the Builder assembles more than it builds. That is when a factory starts paying
+off.
 
-**6. La vérification**
-Aucun build n'est "fini" sans : capture avec verdict qualité `pass`, `get_op_errors` vide sur toute la hiérarchie, fps dans la tolérance de la baseline mesurée avant build, et chaque paramètre custom testé sur ses bornes.
+**5. The projects (`projects/<slug>/`)**
+One self-contained folder per project: its spec, its `.toe`, its externalized code, its
+captures and its build report.
 
-**7. La mémoire des erreurs (`knowledge/lessons.yaml`)**
-Chaque erreur résolue avec cause identifiée et fix vérifié devient une leçon greppable, partagée par tous les agents et tous les harnesses. Trois occurrences d'un même pattern, et la leçon est promue en convention. C'est ce qui fait qu'une usine ne refait pas deux fois la même erreur.
+**6. Verification**
+No build is "finished" without: a capture with a `pass` quality verdict, `get_op_errors` empty
+across the hierarchy, fps within tolerance of the baseline measured before the build, and
+every custom parameter exercised at its bounds.
 
-## Structure du dépôt
+**7. The error memory (`knowledge/lessons.yaml`)**
+Every resolved error with an identified cause and a verified fix becomes a greppable lesson,
+shared by all agents and all harnesses. Three occurrences of the same pattern and the lesson
+gets promoted into a convention. This is what stops a factory making the same mistake twice.
+
+## Repository layout
 
 ```
 td-factory/
-├── AGENTS.md                   # point d'entrée canonique pour tout agent, pas seulement Claude
-├── CLAUDE.md                   # contexte global, lu à chaque session Claude
-├── ARCHITECTURE.md              # ce fichier
+├── AGENTS.md                   # canonical entry point for any agent, not just Claude
+├── CLAUDE.md                   # global context, read on every Claude session
+├── ARCHITECTURE.md             # this file
 ├── .claude/
 │   ├── rules/
 │   │   └── 00-studio-conventions.md
@@ -80,42 +101,55 @@ td-factory/
 │   ├── spec.template.yaml
 │   └── project-README.md
 ├── scripts/
-│   ├── new_project.py           # scaffold d'un dossier projet
-│   └── validate_spec.py         # gate : le spec est-il exécutable
+│   ├── new_project.py           # scaffold a project folder
+│   └── validate_spec.py         # the gate: is this spec executable
 ├── lib/
-│   └── index.yaml               # registre des composants TDXN réutilisables
+│   └── index.yaml               # registry of reusable TDXN components
 ├── knowledge/
-│   └── lessons.yaml             # mémoire des erreurs, partagée entre agents
+│   └── lessons.yaml             # error memory, shared across agents
 └── projects/
     └── <slug>/
-        ├── spec.yaml            # le contrat
-        ├── project.toe          # binaire, non diffable
-        ├── network/             # exports TDXN, source de vérité lisible
-        ├── scripts/             # python externalisé
-        ├── glsl/                # shaders externalisés
+        ├── spec.yaml            # the contract
+        ├── project.toe          # binary, not diffable
+        ├── network/             # TDXN exports, the readable source of truth
+        ├── scripts/             # externalized python
+        ├── glsl/                # externalized shaders
         ├── assets/
-        ├── captures/            # preuves visuelles horodatées
-        ├── build-report.md      # ce que le Builder a fait et vérifié
+        ├── captures/            # timestamped visual evidence
+        ├── build-report.md      # what the Builder did and verified
         └── README.md
 ```
 
-## Ce que l'agent doit avoir sous la main pour bosser
-Résumé de la question posée. Un agent qui construit du TD a besoin de sept choses, et il en manque toujours au moins trois quand ça se passe mal :
+## What an agent needs on hand to do this work
 
+An agent building TD needs seven things, and at least three are always missing when it goes
+wrong:
 
-1. **Un contrat écrit** de ce qu'il doit produire, avec des critères vérifiables. Sinon il déclare victoire trop tôt.
-2. **L'introspection de l'API** : les vrais noms de paramètres, pas ceux qu'il devine. Envoy fournit `get_docs`, `get_td_class_details`, `get_parameter`.
-3. **Un feedback visuel** avec un verdict machine. Une capture qu'il peut regarder, plus un `is_black` / `is_flat` / `pass` qu'il peut lire sans regarder.
-4. **L'état réel du réseau** en peu de tokens. `read_tdxn` plutôt que 200 appels `get_op`.
-5. **Un budget** : nombre d'opérateurs, temps de cook GPU, fps plancher. Sans budget, il construit jusqu'à ce que ça rame.
-6. **Une bibliothèque** de ce qui a déjà marché. Sinon il réinvente le même feedback loop à chaque projet, avec un bug différent à chaque fois.
-7. **Une mémoire des erreurs** : ce qui a déjà coûté du temps et comment ça s'est résolu. Sinon chaque agent refait la même erreur, avec un bug différent lui aussi.
+1. **A written contract** of what it must produce, with checkable criteria. Otherwise it
+   declares victory too early.
+2. **API introspection**: the real parameter names, not the guessed ones. Envoy provides
+   `get_docs`, `get_td_class_details`, `get_parameter`.
+3. **Visual feedback with a machine verdict**: a capture it can look at, plus an
+   `is_black` / `is_flat` / `pass` it can read without looking.
+4. **The real state of the network** in few tokens. `read_tdxn` rather than 200 `get_op`
+   calls.
+5. **A budget**: operator count, GPU cook time, fps floor. Without a budget it builds until it
+   stutters.
+6. **A library** of what already worked. Otherwise it reinvents the same feedback loop on
+   every project, with a different bug each time.
+7. **An error memory**: what already cost time and how it was resolved. Otherwise every agent
+   repeats the same mistake, also with a different bug each time.
 
-## Prérequis
+## Requirements
 
-- TouchDesigner 2025.33070 ou plus
-- Embody + Envoy installés dans le `.toe` seed (le Setup Wizard écrit `.mcp.json`, `.claude/rules/` et `.claude/skills/` d'Embody)
-- Un agent MCP capable : Claude Code, ou tout autre qui lit `AGENTS.md` (point d'entrée canonique, indépendant du harness)
-- Python 3.11+ pour les scripts de scaffold
+- TouchDesigner 2025.33070 or newer
+- Embody + Envoy installed in the seed `.toe` (the Setup Wizard writes `.mcp.json`,
+  Embody's `.claude/rules/` and `.claude/skills/`)
+- An MCP-capable agent: Claude Code, or any other that reads `AGENTS.md` (the canonical,
+  harness-independent entry point)
+- Python 3.11+ for the scaffold scripts
 
-Note de cohabitation : Embody génère ses propres fichiers dans `.claude/`. Les fichiers de cette usine sont préfixés (`00-studio-conventions.md`) ou portent des noms qui n'entrent pas en collision (`td-architect`, `td-builder`). Embody garde une empreinte de ce qu'il génère et ne réécrit pas un fichier que tu as modifié, mais ne renomme jamais un de ses fichiers pour autant.
+Coexistence note: Embody generates its own files under `.claude/`. This factory's files are
+prefixed (`00-studio-conventions.md`) or carry names that do not collide (`td-architect`,
+`td-builder`). Embody keeps a fingerprint of what it generates and does not overwrite a file
+you edited — but it never renames one of its own files either.
