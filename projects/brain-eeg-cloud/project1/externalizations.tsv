@@ -1,0 +1,4 @@
+path	type	strategy	rel_file_path	timestamp	dirty	build	touch_build	node_x	node_y	node_color
+/project1/externalizations	table	tsv	project1/externalizations.tsv	2026-09-09 10:48:00 UTC				-200	0	0.9000,0.3000,0.4000
+/project1/fx_pulse/glsl_pulse_compute	text	glsl	project1/fx_pulse/glsl_pulse_compute.glsl	2026-09-09 18:23:56 UTC				325	-120	0.9000,0.3000,0.4000
+/project1/render/mouse_orbit	execute	py	project1/render/mouse_orbit.py	2026-09-10 14:48:42 UTC				800	-1200	0.9000,0.3000,0.4000

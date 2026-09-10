@@ -1,0 +1,2128 @@
+format: tdxn
+version: '2.1'
+generator: Embody/6.2.42
+td_build: 099.2025.33070
+source_file: project.18.toe
+exported_at: '2026-09-10T17:38:21Z'
+network_path: /project1
+options:
+  include_dat_content: true
+  include_storage: true
+type_defaults:
+  baseCOMP:
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  compositeTOP:
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  constantCHOP:
+    parameters:
+      autoexportroot: =parent()
+      rate: =me.time.rate
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  containerCOMP:
+    parameters:
+      repocomp: =me
+      resizecomp: =me
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  inPOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  inTOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  levelTOP:
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  mathCHOP:
+    parameters:
+      autoexportroot: =parent()
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  noiseTOP:
+    parameters:
+      outputresolution: custom
+      resolutionh: 720
+      resolutionw: 1280
+      type: simplex4d
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  nullPOP:
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  nullTOP:
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  outPOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  outTOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  parameterCOMP:
+    parameters:
+      allowexpand: false
+      bgalpha: 0.9
+      bgcolorb: 0.05
+      bgcolorg: 0.025
+      bgcolorr: 0.03
+      builtin: false
+      compress: 0.8
+      repocomp: =me
+      resizecomp: =me
+      w: 324
+      x: 8
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  rampTOP:
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  tableDAT:
+    size:
+    - 130
+    - 90
+  textCOMP:
+    parameters:
+      alignx: left
+      bgalpha: 1
+      repocomp: =me
+      resizecomp: =me
+      textoffsetx: 10
+      w: 324
+      x: 8
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+type: containerCOMP
+parameters:
+  w: 1280
+  h: 720
+  resizecomp: =me
+  repocomp: =me
+  top: ./out1
+  borderover: false
+  parentshortcut: Project
+flags:
+- viewer
+color:
+- 0.56
+- 0.56
+- 0.56
+operators:
+- name: render
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Pointsize
+      style: Float
+      startSection: true
+      default: 1.55
+      min: 0.5
+      max: 6.0
+      clampMin: true
+      clampMax: true
+      normMin: 0.5
+      normMax: 6.0
+      help: On-screen point size. Fine reads as dust, large as a luminous mass.
+      value: 2.6
+    - name: Orbitspeed
+      style: Float
+      default: 0.12
+      clampMin: true
+      clampMax: true
+      help: Amplitude of the camera sweep around its three-quarter angle. Zero holds it still; the view always stays off-axis.
+      value: 1
+    - name: Depthfade
+      style: Float
+      default: 1
+      clampMin: true
+      clampMax: true
+      help: 'Strength of the depth cues: back-face removal, dimming with distance, point size attenuation. At 0 the cloud
+        turns transparent again and the rotation direction becomes ambiguous.'
+  position:
+  - 2400
+  - -600
+  inputs:
+  - out_fx_pulse
+  children:
+  - name: out1
+    type: outTOP
+    position:
+    - 1600
+    - 0
+    inputs:
+    - render_brain
+  - name: cam_orbit
+    type: cameraCOMP
+    parameters:
+      tx: =op('cam_state')['camx']
+      ty: =op('cam_state')['camy']
+      tz: =op('cam_state')['camz']
+      lookat: null_target
+      fov: 30
+      fogdensity: =parent().par.Depthfade.eval() * 0.16
+      fognear: 5
+      fogfar: 9
+      fogcolorr: 0.012
+      fogcolorg: 0.006
+      fogcolorb: 0.025
+      fogalpha: 0
+    flags:
+    - -display
+    position:
+    - 800
+    - -400
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    children:
+    - name: file1
+      type: fileinPOP
+      parameters:
+        file: =app.samplesFolder + '/Geo/defcam.tog'
+      flags:
+      - display
+      - viewer
+      size:
+      - 130
+      - 90
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+  - name: cam_state
+    type: constantCHOP
+    sequences:
+      const:
+      - name: camx
+        value: 7.3737135989
+      - name: camy
+        value: 3
+      - name: camz
+        value: 0.6231755465
+    position:
+    - 400
+    - -1200
+  - name: geo_brain
+    type: geometryCOMP
+    parameters:
+      material: pointsprite_brain
+    position:
+    - 400
+    - 0
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - in_points
+    children:
+    - name: in_pop
+      type: inPOP
+    - name: null_out
+      type: nullPOP
+      flags:
+      - display
+      - render
+      position:
+      - 400
+      - 0
+      inputs:
+      - in_pop
+  - name: in_points
+    type: inPOP
+  - name: mouse_orbit
+    type: executeDAT
+    parameters:
+      fromop: =parent()
+      framestart: true
+      file: project1/render/mouse_orbit.py
+      syncfile: true
+    position:
+    - 800
+    - -1200
+    size:
+    - 130
+    - 90
+    color:
+    - 0.9
+    - 0.3
+    - 0.4
+    tags:
+    - py
+    dat_content: "# Mouse rotation of the brain, inside the render window only.\n#   left click + horizontal drag : turn around\
+      \ the brain\n#   wheel                        : move closer or further away\n# The eye height is fixed: it is deliberately\
+      \ not adjustable.\n#\n# A drag that starts over the control panel is ignored. Without that guard, moving a\n# slider\
+      \ also rotated the brain.\n#\n# After a few seconds of no input, the camera resumes its automatic sweep between\n# three-quarter\
+      \ and profile, and the manual offset fades out.\n#\n# This DAT writes camx / camy / camz into the cam_state Constant\
+      \ CHOP; cam_orbit's\n# translate parameters do nothing but read those channels.\n\nimport math\n\nDRAG_GAIN = 4.2  \
+      \            # radians per window width dragged\nCAM_HEIGHT = 3.0             # fixed eye height\nDIST_BASE = 7.4\n\
+      DIST_MIN, DIST_MAX = 4.2, 13.0\nIDLE_BEFORE_AUTO = 2.5       # seconds of idleness before the automatic sweep resumes\n\
+      BLEND_SPEED = 0.55           # speed of the return to automatic\nDECAY = 0.965                # decay of the manual\
+      \ offset once back on automatic\n\n# Interaction state. Reset when this DAT reloads, which is harmless: the camera simply\n\
+      # starts again from its automatic angle.\n_state = {'az': 0.0, 'auto': 1.0, 'idle': 99.0, 'lastu': 0.0,\n          'down':\
+      \ False, 'dragok': False, 'wheelref': None}\n\n\ndef onFrameStart(frame):\n    comp = parent()                     \
+      \             # the render stage\n    out = comp.op('cam_state')\n    ui = comp.parent().op('ui_control')          \
+      \     # the render window\n    if out is None or ui is None:\n        return\n\n    panel = ui.op('panel_params')\n\
+      \    over_ui = float(ui.panel.inside) > 0.5\n    over_panel = panel is not None and float(panel.panel.inside) > 0.5\n\
+      \    down = float(ui.panel.lselect) > 0.5 and over_ui\n    u = float(ui.panel.u)\n\n    dt = 1.0 / max(project.cookRate,\
+      \ 1.0)\n\n    if down and not _state['down']:\n        # Start of the drag: decide here, once and for all, whether this\
+      \ drag drives the\n        # camera. A click that started on the panel never will, even if the cursor later\n      \
+      \  # moves over the render.\n        _state['dragok'] = not over_panel\n        _state['lastu'] = u\n\n    if down and\
+      \ _state['dragok']:\n        _state['az'] += (u - _state['lastu']) * DRAG_GAIN\n        _state['lastu'] = u\n      \
+      \  _state['idle'] = 0.0\n        _state['auto'] = 0.0\n    else:\n        _state['idle'] += dt\n        if _state['idle']\
+      \ > IDLE_BEFORE_AUTO:\n            _state['auto'] = min(1.0, _state['auto'] + BLEND_SPEED * dt)\n            if _state['auto']\
+      \ >= 1.0:                # the manual offset decays\n                _state['az'] *= DECAY\n    _state['down'] = down\n\
+      \n    # The wheel only acts while the cursor is over the render, never over the panel.\n    # The panel's wheel value\
+      \ accumulates, so it is referenced against its first-seen\n    # value; otherwise the distance starts pinned at its\
+      \ ceiling.\n    raw_wheel = float(ui.panel.wheel)\n    if _state['wheelref'] is None:\n        _state['wheelref'] =\
+      \ raw_wheel\n    if over_panel:\n        _state['wheelref'] = raw_wheel               # ignore scrolling that happens\
+      \ elsewhere\n    wheel = raw_wheel - _state['wheelref']\n\n    # Automatic sweep between three-quarter and profile,\
+      \ damped while dragging.\n    speed = comp.par.Orbitspeed.eval()\n    swing = 0.35 * math.sin(absTime.seconds * speed\
+      \ * 0.55) * _state['auto']\n    angle = 1.25 + swing + _state['az']\n    dist = min(DIST_MAX, max(DIST_MIN, DIST_BASE\
+      \ - wheel * 1.5))\n\n    out.par.const0value = dist * math.sin(angle)\n    out.par.const1value = CAM_HEIGHT\n    out.par.const2value\
+      \ = dist * math.cos(angle)\n    return\n"
+    dat_content_format: text
+  - name: null_target
+    type: nullCOMP
+    position:
+    - 400
+    - -800
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    children:
+    - name: primitive1
+      type: primitivePOP
+      parameters:
+        addpts: true
+        method: pattern
+      sequences:
+        attr:
+        - name: color
+        prim:
+        - type: lines
+          pattern: 0 1
+        - type: lines
+          pattern: 2 3
+        - type: lines
+          pattern: 4 5
+        pt:
+        - posx: -0.1
+          colorg: 0
+          colorb: 0
+        - posx: 0.1
+          colorg: 0
+          colorb: 0
+        - posy: -0.1
+          colorr: 0
+          colorb: 0
+        - posy: 0.1
+          colorr: 0
+          colorb: 0
+        - posz: -0.1
+          colorr: 0
+          colorg: 0
+        - posz: 0.1
+          colorr: 0
+          colorg: 0
+      custom_pars:
+        Points:
+        - name: pt
+          style: Sequence
+          label: Point
+        - name: Posx
+          style: XYZW
+          label: Position
+          size: 3
+          sequence: pt
+        - name: Colorr
+          style: RGBA
+          label: Color
+          default: 1
+          sequence: pt
+      flags:
+      - display
+      - viewer
+      size:
+      - 130
+      - 90
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+  - name: ramp_sprite
+    type: rampTOP
+    parameters:
+      dat: ramp_sprite_keys
+      type: radial
+      outputresolution: custom
+      resolutionw: 64
+      resolutionh: 64
+    position:
+    - 0
+    - -400
+  - name: render_brain
+    type: renderTOP
+    parameters:
+      camera: cam_orbit
+      geometry: geo_brain
+      antialias: aa1
+      format: rgba16float
+    position:
+    - 1200
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: ramp_sprite_keys
+    type: tableDAT
+    flags:
+    - viewer
+    - -showDocked
+    position:
+    - 0
+    - -520
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    dock: ramp_sprite
+    dat_content:
+    - - pos
+      - r
+      - g
+      - b
+      - a
+    - - '0'
+      - '1'
+      - '1'
+      - '1'
+      - '1'
+    - - '0.55'
+      - '1'
+      - '1'
+      - '1'
+      - '1'
+    - - '0.80'
+      - '1'
+      - '1'
+      - '1'
+      - '0.35'
+    - - '1'
+      - '1'
+      - '1'
+      - '1'
+      - '0'
+    dat_content_format: table
+  - name: pointsprite_brain
+    type: pointspriteMAT
+    parameters:
+      colormap: ramp_sprite
+      pointsize: =parent().par.Pointsize.eval()
+      attennear: 4.5
+      attenfar: 8
+      attensizenear: =parent().par.Pointsize.eval() * (2.0 + 1.4 * parent().par.Depthfade.eval())
+      attensizefar: =parent().par.Pointsize.eval() * (1.0 - 0.65 * parent().par.Depthfade.eval())
+      skelrootpath: =parent()
+      blending: true
+      destblend: one
+      depthwriting: false
+    position:
+    - 400
+    - -400
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  annotations:
+  - name: annotate
+    mode: annotate
+    title: Brain render
+    text: 'The cloud becomes additive luminous sprites (screen-space size, depth tested but not written, so points accumulate
+      as light). Camera sweeping between three-quarter and profile, with mouse rotation scoped to the render window. 16-bit
+      float render on a transparent background: compositing happens in the next stage.'
+    position:
+    - -70
+    - -870
+    size:
+    - 1870
+    - 1170
+    color:
+    - 0.45
+    - 0.45
+    - 0.45
+- name: fx_pulse
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Breath
+      style: Float
+      startSection: true
+      default: 0.3
+      clampMin: true
+      clampMax: true
+      help: Breathing amplitude at rest. Zero freezes the shape completely.
+      value: 0
+    - name: Dispersion
+      style: Float
+      default: 0.6
+      max: 2.0
+      clampMin: true
+      clampMax: true
+      normMax: 2.0
+      help: How far points scatter on signal peaks. Too high dissolves the brain shape.
+      value: 0
+    - name: Warmth
+      style: Float
+      default: 0.35
+      clampMin: true
+      clampMax: true
+      help: Share of violet in the brain detail. Low gives a uniform pink, high brings the relief out in violet.
+      value: 0
+    - name: Activity
+      style: Float
+      default: 0.9
+      clampMin: true
+      clampMax: true
+      help: Intensity of the amber activity focus travelling through the brain. Zero switches it off.
+      value: 1
+    - name: Zonesize
+      style: Float
+      default: 0.3
+      min: 0.15
+      clampMin: true
+      clampMax: true
+      normMin: 0.15
+      help: Extent of the activity focus. Small gives a sharp hot spot, large a diffuse wash.
+      value: 1
+  position:
+  - 1200
+  - -600
+  inputs:
+  - out_src_cloud
+  - out_ctrl_signal
+  children:
+  - name: out1
+    type: outPOP
+    position:
+    - 800
+    - 0
+    inputs:
+    - glsl_pulse
+  - name: in_cloud
+    type: inPOP
+  - name: in_signal
+    type: inCHOP
+    parameters:
+      label: =me.name
+      autoexportroot: =parent()
+    position:
+    - 0
+    - -400
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: glsl_pulse
+    type: glslPOP
+    parameters:
+      computedat: glsl_pulse_compute
+      outputattrs: P Color
+    sequences:
+      attr:
+      - name: color
+        type: color
+        numcomps: '4'
+      vec:
+      - name: uSignal
+        type: vec4
+        valuex: =op('in_signal')['alpha']
+        valuey: =op('in_signal')['beta']
+        valuez: =op('in_signal')['theta']
+      - name: uCtrl
+        type: vec4
+        valuex: =parent().par.Breath.eval()
+        valuey: =parent().par.Dispersion.eval()
+        valuez: =parent().par.Warmth.eval()
+        valuew: =absTime.seconds
+      - name: uZone
+        type: vec4
+        valuex: 5.5
+        valuey: =parent().par.Zonesize.eval()
+        valuez: =parent().par.Activity.eval()
+      - name: uCam
+        type: vec4
+        valuex: =op('../render/cam_orbit').par.tx.eval()
+        valuey: =op('../render/cam_orbit').par.ty.eval()
+        valuez: =op('../render/cam_orbit').par.tz.eval()
+        valuew: =op('../render').par.Depthfade.eval()
+    position:
+    - 400
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - in_cloud
+  - name: glsl_pulse_info
+    type: infoDAT
+    parameters:
+      op: glsl_pulse
+    flags:
+    - viewer
+    position:
+    - 475
+    - -120
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    dock: glsl_pulse
+    dat_read_only: true
+  - name: glsl_pulse_compute
+    type: textDAT
+    parameters:
+      file: project1/fx_pulse/glsl_pulse_compute.glsl
+      syncfile: true
+      language: glsl
+    flags:
+    - viewer
+    position:
+    - 325
+    - -120
+    size:
+    - 130
+    - 90
+    color:
+    - 0.9
+    - 0.3
+    - 0.4
+    tags:
+    - glsl
+    dock: glsl_pulse
+    dat_content: "// fx_pulse -- breathing, activity focus, lighting and colour of the brain point cloud.\n//\n// The cloud\
+      \ comes from a SURFACE mesh, so every point carries the real normal of the\n// cortical skin. Three depth cues follow\
+      \ from that, and it is their absence that made\n// the rotation direction ambiguous (kinetic depth ambiguity, the Necker\
+      \ cube family):\n//   1. the back face is REMOVED, not dimmed;\n//   2. brightness decreases with distance to the camera;\n\
+      //   3. the lighting model rotates with the object.\n// Depth-buffer occlusion, the fourth cue, is a setting on the\
+      \ MAT.\n//\n// Uniforms provided by the GLSL POP's vec sequence:\n//   uSignal = (alpha, beta, theta, 0)\n//   uCtrl\
+      \   = (Breath, Dispersion, Warmth, time in seconds)\n//   uZone   = (focus travel period, Zonesize, Activity, 0)\n//\
+      \   uCam    = (camera xyz position, Depthfade)\n// In: P, N, Seed (0-1, unique per point). Out: displaced P and premultiplied\
+      \ Color.\n\nvec3 hash3(float n)\n{\n\treturn fract(sin(vec3(n, n + 1.7, n + 3.3)) * vec3(43758.5453, 22578.1459, 19642.3490))\
+      \ * 2.0 - 1.0;\n}\n\n// Centre of the activity focus: it jumps to a new position every period, with a smooth\n// interpolation\
+      \ so the move reads as a propagation rather than a cut.\nvec3 zoneCenter(float t, float period)\n{\n\tfloat slot = floor(t\
+      \ / period);\n\tfloat f = smoothstep(0.0, 1.0, fract(t / period));\n\tvec3 a = hash3(slot * 11.0 + 3.0);\n\tvec3 b =\
+      \ hash3((slot + 1.0) * 11.0 + 3.0);\n\treturn mix(a, b, f) * vec3(0.62, 0.60, 0.85);\n}\n\nvoid main()\n{\n\tconst uint\
+      \ id = TDIndex();\n\tif (id >= TDNumElements())\n\t\treturn;\n\n\tvec3 p = TDIn_P();\n\tvec3 n = normalize(TDIn_N());\n\
+      \tfloat seed = TDIn_Seed();\n\n\tfloat alpha = uSignal.x;\n\tfloat beta = uSignal.y;\n\tfloat theta = uSignal.z;\n\t\
+      float breathAmt = uCtrl.x;\n\tfloat disperseAmt = uCtrl.y;\n\tfloat violetAmt = uCtrl.z;\n\tfloat t = uCtrl.w;\n\tfloat\
+      \ zonePeriod = max(uZone.x, 0.5);\n\tfloat zoneRadius = max(uZone.y, 0.05);\n\tfloat activityAmt = uZone.z;\n\tvec3\
+      \ camPos = uCam.xyz;\n\tfloat depthFade = uCam.w;\n\n\t// Breathing: the surface swells along its own normal, phase-shifted\
+      \ per point.\n\tfloat phase = seed * 6.2831853;\n\tfloat slow = sin(t * 0.55 + phase);\n\tfloat fast = sin(t * 1.70\
+      \ + phase * 2.3);\n\tfloat breath = 0.5 + 0.5 * (0.75 * slow + 0.25 * fast);\n\tfloat amp = breathAmt * 0.09 * (0.35\
+      \ + 0.65 * alpha);\n\tvec3 disp = n * amp * breath;\n\n\t// One activity focus at a time: it travels through the volume\
+      \ and breathes on its own\n\t// rhythm. Nearby points light up and are pushed outward.\n\tvec3 zc = zoneCenter(t, zonePeriod);\n\
+      \tfloat zd = length(p - zc);\n\tfloat zw = exp(-(zd * zd) / (zoneRadius * zoneRadius));\n\tfloat pulse = 0.45 + 0.55\
+      \ * (0.5 + 0.5 * sin(t * 1.25));\n\tfloat act = clamp(zw * pulse * 2.1 * activityAmt * (0.35 + 0.65 * beta), 0.0, 1.0);\n\
+      \tdisp += n * act * 0.05;\n\n\t// Dispersion: only real beta peaks throw points out (beta squared).\n\tvec3 jitter =\
+      \ hash3(seed * 512.0 + 3.0);\n\tfloat burst = disperseAmt * beta * beta;\n\tdisp += jitter * burst * 0.30 * (0.35 +\
+      \ 0.65 * seed);\n\n\tvec3 pFinal = p + disp;\n\tP[id] = pFinal;\n\n\tvec3 toCam = normalize(camPos - pFinal);\n\tfloat\
+      \ facing = dot(n, toCam);\n\n\t// CUE 1: the back face disappears. A point facing away from the camera is not dimmed,\n\
+      \t// it is not drawn at all. With no visible back face there are no longer two possible\n\t// readings of the rotation\
+      \ direction.\n\tif (facing < 0.02 * depthFade) {\n\t\tColor[id] = vec4(0.0);\n\t\treturn;\n\t}\n\tfloat faceMask = smoothstep(0.0,\
+      \ 0.30, facing);\n\n\t// CUE 2: distance to the camera. Near is bright, far is dark, monotonically, which\n\t// gives\
+      \ a readable depth order during the rotation.\n\tfloat camRadius = length(camPos);\n\tfloat dist01 = clamp((length(pFinal\
+      \ - camPos) - (camRadius - 1.35)) / 2.70, 0.0, 1.0);\n\tfloat depthCue = mix(1.0, 0.15 + 0.85 * (1.0 - dist01) * (1.0\
+      \ - dist01), depthFade);\n\n\t// CUE 3: lighting. A warm key top-left, a cool fill on the other side, Fresnel on the\n\
+      \t// rims. The model turns with the object, so it confirms the rotation direction instead\n\t// of leaving it floating.\n\
+      \tvec3 keyDir = normalize(vec3(-0.45, 0.75, 0.50));\n\tvec3 fillDir = normalize(vec3(0.65, -0.25, 0.30));\n\tfloat key\
+      \ = max(dot(n, keyDir), 0.0);\n\tfloat fill = max(dot(n, fillDir), 0.0);\n\tfloat fresnel = pow(1.0 - clamp(facing,\
+      \ 0.0, 1.0), 2.2);\n\tfloat shade = 0.18 + 0.92 * key + 0.22 * fill + 0.85 * fresnel;\n\n\t// Palette: pale pink dominant,\
+      \ light violet detail, amber activity focus.\n\tvec3 rose = vec3(1.00, 0.62, 0.78);\n\tvec3 violet = vec3(0.74, 0.55,\
+      \ 0.98);\n\tvec3 amber = vec3(1.00, 0.66, 0.20);\n\n\t// Violet marks the sulci -- where the normal turns away from\
+      \ the key light -- while\n\t// the ridges stay pink.\n\tfloat violetMix = clamp(violetAmt * (0.25 * seed + 1.25 * (1.0\
+      \ - key)), 0.0, 1.0);\n\tvec3 col = mix(rose, violet, violetMix);\n\tcol = mix(col, amber, smoothstep(0.02, 0.55, act));\n\
+      \n\tfloat bright = 0.030 + 0.055 * breath * (0.35 + 0.65 * alpha);\n\tbright *= shade;\n\tbright *= 0.70 + 0.60 * seed;\n\
+      \tbright *= mix(1.0, 0.03 + 0.97 * faceMask, depthFade) * depthCue;\n\tbright += act * 0.26 * mix(1.0, 0.25 + 0.75 *\
+      \ faceMask, depthFade);\n\n\t// Alpha = the strongest channel of the emitted colour. Premultiplied, so a dark point\n\
+      \t// never occludes the background: no black halo around the brain.\n\tvec3 rgb = col * bright;\n\tfloat a = clamp(max(max(rgb.r,\
+      \ rgb.g), rgb.b), 0.0, 1.0);\n\tColor[id] = vec4(rgb, a);\n}\n"
+    dat_content_format: text
+  annotations:
+  - name: annotate
+    mode: annotate
+    title: Cloud pulsation
+    text: A single GLSL POP displaces and colours every point on the GPU. Breathing along the normal phase-shifted by each
+      point's seed, one amber activity focus travelling through the volume, back-face removal and depth dimming. The shader
+      is externalized under project1/fx_pulse/.
+    position:
+    - -70
+    - -470
+    size:
+    - 1070
+    - 730
+    color:
+    - 0.45
+    - 0.45
+    - 0.45
+- name: bg_aurora
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Auroraspeed
+      style: Float
+      startSection: true
+      default: 0.08
+      clampMin: true
+      clampMax: true
+      help: Drift speed of the background veils. Zero freezes them completely.
+      value: 1
+    - name: Auroralevel
+      style: Float
+      default: 0.12
+      clampMin: true
+      clampMax: true
+      help: Background brightness. Raising it brings the field forward behind the brain.
+      value: 1
+  position:
+  - 2400
+  - -1600
+  children:
+  - name: out1
+    type: outTOP
+    position:
+    - 1800
+    - 0
+    inputs:
+    - comp_falloff
+  - name: comp_veils
+    type: compositeTOP
+    parameters:
+      operand: add
+    position:
+    - 400
+    - 0
+    inputs:
+    - noise_veil
+    - noise_detail
+  - name: noise_veil
+    type: noiseTOP
+    parameters:
+      period: 4.5
+      harmon: 3
+      sx: 0.45
+      sy: 1.15
+      t4d: =absTime.seconds * parent().par.Auroraspeed.eval() * 0.22
+  - name: level_shape
+    type: levelTOP
+    parameters:
+      brightness1: =0.55 + parent().par.Auroralevel.eval() * 1.3
+      inlow: 0.22
+      inhigh: 0.95
+      outhigh: 0.5
+    position:
+    - 600
+    - 0
+    inputs:
+    - comp_veils
+  - name: comp_falloff
+    type: compositeTOP
+    position:
+    - 1400
+    - 0
+    inputs:
+    - lookup_palette
+    - circle_falloff
+  - name: noise_detail
+    type: noiseTOP
+    parameters:
+      period: 1.1
+      amp: 0.12
+      offset: 0
+      sx: 0.8
+      sy: 0.8
+      t4d: =absTime.seconds * parent().par.Auroraspeed.eval() * 0.30 + 17.0
+    position:
+    - 0
+    - -400
+  - name: ramp_palette
+    type: rampTOP
+    parameters:
+      dat: ramp_palette_keys
+      color1: 0.52
+      color2: 0.76
+      color3: 0.95
+    position:
+    - 600
+    - -400
+  - name: circle_falloff
+    type: circleTOP
+    parameters:
+      radiusx: 0.85
+      radiusy: 0.85
+      fillcolorr: 0.42
+      fillcolorg: 0.42
+      fillcolorb: 0.42
+      bgcolorr: 1
+      bgcolorg: 1
+      bgcolorb: 1
+      bgalpha: 1
+      softness: 1.6
+      outputresolution: custom
+      resolutionw: 1280
+      resolutionh: 720
+    position:
+    - 1000
+    - -400
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: lookup_palette
+    type: lookupTOP
+    parameters:
+      channel: luminance
+    position:
+    - 1000
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - level_shape
+    - ramp_palette
+  - name: ramp_palette_keys
+    type: tableDAT
+    flags:
+    - viewer
+    - -showDocked
+    position:
+    - 600
+    - -520
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    dock: ramp_palette
+    dat_content:
+    - - pos
+      - r
+      - g
+      - b
+      - a
+    - - '0'
+      - '0.006'
+      - '0.016'
+      - '0.045'
+      - '1'
+    - - '0.45'
+      - '0.020'
+      - '0.050'
+      - '0.100'
+      - '1'
+    - - '0.75'
+      - '0.045'
+      - '0.115'
+      - '0.205'
+      - '1'
+    - - '0.92'
+      - '0.100'
+      - '0.210'
+      - '0.330'
+      - '1'
+    - - '1'
+      - '0.170'
+      - '0.320'
+      - '0.470'
+      - '1'
+    dat_content_format: table
+  annotations:
+  - name: annotate
+    mode: annotate
+    title: Aurora background
+    text: Two layers of 4D simplex noise evolving in place (never scrolling), summed, stretched across their real range, then
+      mapped into the deep navy to sky blue palette. Auroraspeed drives the drift, Auroralevel the brightness. A hard output
+      ceiling keeps the background darker than the brain at every phase of the noise.
+    position:
+    - -70
+    - -590
+    size:
+    - 1670
+    - 850
+    color:
+    - 0.45
+    - 0.45
+    - 0.45
+- name: composite
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Persistence
+      style: Float
+      startSection: true
+      default: 0.8
+      max: 0.95
+      clampMin: true
+      clampMax: true
+      normMax: 0.95
+      help: Length of the trails behind the points. High stretches the comet; beyond that the shape drowns.
+    - name: Glow
+      style: Float
+      default: 0.7
+      clampMin: true
+      clampMax: true
+      help: Halo around the most intense points.
+      value: 1
+  position:
+  - 3600
+  - -600
+  inputs:
+  - out_bg_aurora
+  - out_render
+  children:
+  - name: out1
+    type: outTOP
+    position:
+    - 2000
+    - 0
+    inputs:
+    - tonemap_final
+  - name: in_bg
+    type: inTOP
+    position:
+    - 0
+    - -400
+  - name: comp_over
+    type: compositeTOP
+    parameters:
+      operand: over
+    position:
+    - 800
+    - 0
+    inputs:
+    - in_render
+    - blur_depth
+  - name: fx_trails
+    type: baseCOMP
+    custom_pars:
+      Custom:
+      - name: Persistence
+        style: Float
+        default: 0.8
+        max: 0.95
+        clampMin: true
+        clampMax: true
+        normMax: 0.95
+        help: Longueur des trainees lumineuses derriere les points, haut allonge la comete.
+        value: =parent().par.Persistence.eval()
+    position:
+    - 400
+    - 0
+    inputs:
+    - in_render
+    children:
+    - name: InRender
+      type: inTOP
+    - name: OutStage
+      type: outTOP
+      position:
+      - 1600
+      - 0
+      inputs:
+      - TrailDecay
+    - name: TrailMix
+      type: compositeTOP
+      parameters:
+        operand: screen
+        size: input1
+      position:
+      - 400
+      - 0
+      inputs:
+      - InRender
+      - TrailDecay
+    - name: TrailDecay
+      type: levelTOP
+      parameters:
+        brightness1: =op('..').par.Persistence.eval()
+      position:
+      - 1200
+      - 0
+      inputs:
+      - TrailFeedback
+    - name: TrailFeedback
+      type: feedbackTOP
+      parameters:
+        top: TrailMix
+      position:
+      - 800
+      - 0
+      size:
+      - 130
+      - 90
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      inputs:
+      - InRender
+  - name: in_render
+    type: inTOP
+  - name: bloom_glow
+    type: bloomTOP
+    parameters:
+      preblacklevel: 0.62
+      minbloomradius: 0.25
+      maxbloomradius: 1.15
+      bloomthreshold: 0.3
+      bloomintensity: =parent().par.Glow.eval() * 1.15
+    position:
+    - 1400
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - comp_trails
+  - name: blur_depth
+    type: blurTOP
+    parameters:
+      size: 16
+    position:
+    - 400
+    - -400
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - in_bg
+  - name: comp_trails
+    type: compositeTOP
+    parameters:
+      operand: add
+    position:
+    - 1100
+    - 0
+    inputs:
+    - comp_over
+    - fx_trails
+  - name: tonemap_final
+    type: tonemapTOP
+    parameters:
+      exposurebias: 0.95
+    position:
+    - 1600
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - bloom_glow
+  annotations:
+  - name: annotate1
+    mode: annotate
+    title: Final composite
+    text: The brain is composited over the blurred background, then the trails (feedback_trails from lib/) are added as light,
+      followed by glow and an ACES tone map that rolls the highlights off instead of clipping them. Persistence drives the
+      comet length, Glow the halo.
+    position:
+    - -70
+    - -470
+    size:
+    - 2270
+    - 770
+    color:
+    - 0.45
+    - 0.45
+    - 0.45
+- name: out_final
+  type: nullTOP
+  flags:
+  - display
+  position:
+  - 4000
+  - -600
+  inputs:
+  - composite
+- name: src_cloud
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Density
+      style: Float
+      startSection: true
+      default: 0.6
+      min: 0.05
+      clampMin: true
+      clampMax: true
+      normMin: 0.05
+      help: Proportion of points displayed, from a few thousand up to all 215601 surface points. Lower it if the image stutters.
+  position:
+  - 0
+  - -600
+  children:
+  - name: out1
+    type: outPOP
+    position:
+    - 1600
+    - 0
+    inputs:
+    - transform_upright
+  - name: random_seed
+    type: randomPOP
+    parameters:
+      randomsize: '1'
+      seed: 7
+      amp0: 0.5
+      offset0: 0.5
+      clamp: true
+      outputattrscope: Seed
+      overrideautoattr: true
+    position:
+    - 400
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - pointfilein_surface
+  - name: delete_decimate
+    type: deletePOP
+    sequences:
+      attr:
+      - inattr: Seed
+        func: gt
+        value: =-0.85 + parent().par.Density.eval() * 2.70
+    position:
+    - 800
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - random_seed
+  - name: transform_upright
+    type: transformPOP
+    position:
+    - 1200
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - delete_decimate
+  - name: pointfilein_surface
+    type: pointfileinPOP
+    parameters:
+      file: assets/brain_surface.ply
+      colorfields: ''
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  annotations:
+  - name: annotate1
+    mode: annotate
+    title: Brain surface cloud
+    text: 'Loads assets/brain_surface.ply (215601 SURFACE points with their normals, converted from brain.glb by scripts/glb_to_ply.py),
+      adds a random seed per point, and decimates by deleting points whose seed exceeds the Density threshold. No rotation
+      to apply: the converter already outputs Y-up, centred and scaled.'
+    position:
+    - -70
+    - -70
+    size:
+    - 1870
+    - 330
+    color:
+    - 0.45
+    - 0.45
+    - 0.45
+- name: out_render
+  type: nullTOP
+  position:
+  - 2800
+  - -600
+  inputs:
+  - render
+- name: ui_control
+  type: containerCOMP
+  parameters:
+    w: 1280
+    h: 720
+    mousewheel: true
+    bgalpha: 1
+    top: out_final
+  position:
+  - 4800
+  - -600
+  children:
+  - name: panel_params
+    type: containerCOMP
+    parameters:
+      x: =parent().par.w.eval() - me.par.w.eval() - 18
+      y: =parent().par.h.eval() - me.par.h.eval() - 18
+      w: 340
+      h: 690
+      rightanchor: 0
+      topanchor: 0
+      bgcolorr: 0.035
+      bgcolorg: 0.03
+      bgcolorb: 0.06
+      bgalpha: 0.86
+    position:
+    - 400
+    - 0
+    children:
+    - name: par_render
+      type: parameterCOMP
+      parameters:
+        op: /project1/render
+        y: 184
+        h: 94
+        alignorder: 3
+      position:
+      - 300
+      - -780
+    - name: label_title
+      type: textCOMP
+      parameters:
+        text: BRAIN EEG CLOUD
+        callbacks: label_title_callbacks
+        fontsize: 13
+        fontcolorr: 0.98
+        fontcolorg: 0.72
+        fontcolorb: 0.86
+        y: 656
+        h: 26
+        bgcolorr: 0.1
+        bgcolorg: 0.05
+        bgcolorb: 0.14
+      position:
+      - 0
+      - 260
+    - name: label_render
+      type: textCOMP
+      parameters:
+        text: RENDER AND CAMERA
+        callbacks: label_render_callbacks
+        fontsize: 9
+        fontcolorr: 0.62
+        fontcolorg: 0.58
+        fontcolorb: 0.72
+        y: 284
+        h: 16
+        bgcolorr: 0.055
+        bgcolorg: 0.045
+        bgcolorb: 0.085
+      position:
+      - 0
+      - -780
+    - name: par_fx_pulse
+      type: parameterCOMP
+      parameters:
+        op: /project1/fx_pulse
+        y: 300
+        h: 150
+        alignorder: 2
+      position:
+      - 300
+      - -520
+    - name: par_bg_aurora
+      type: parameterCOMP
+      parameters:
+        op: /project1/bg_aurora
+        y: 8
+        h: 66
+        alignorder: 5
+      position:
+      - 300
+      - -1300
+    - name: par_composite
+      type: parameterCOMP
+      parameters:
+        op: /project1/composite
+        y: 96
+        h: 66
+        alignorder: 4
+      position:
+      - 300
+      - -1040
+    - name: par_src_cloud
+      type: parameterCOMP
+      parameters:
+        op: /project1/src_cloud
+        y: 472
+        h: 38
+        alignorder: 1
+      position:
+      - 300
+      - -260
+    - name: label_fx_pulse
+      type: textCOMP
+      parameters:
+        text: PULSATION AND ACTIVITY
+        callbacks: label_fx_pulse_callbacks
+        fontsize: 9
+        fontcolorr: 0.62
+        fontcolorg: 0.58
+        fontcolorb: 0.72
+        y: 456
+        h: 16
+        bgcolorr: 0.055
+        bgcolorg: 0.045
+        bgcolorb: 0.085
+      position:
+      - 0
+      - -520
+    - name: label_bg_aurora
+      type: textCOMP
+      parameters:
+        text: BACKGROUND
+        callbacks: label_bg_aurora_callbacks
+        fontsize: 9
+        fontcolorr: 0.62
+        fontcolorg: 0.58
+        fontcolorb: 0.72
+        y: 80
+        h: 16
+        bgcolorr: 0.055
+        bgcolorg: 0.045
+        bgcolorb: 0.085
+      position:
+      - 0
+      - -1300
+    - name: label_composite
+      type: textCOMP
+      parameters:
+        text: COMPOSITE
+        callbacks: label_composite_callbacks
+        fontsize: 9
+        fontcolorr: 0.62
+        fontcolorg: 0.58
+        fontcolorb: 0.72
+        y: 168
+        h: 16
+        bgcolorr: 0.055
+        bgcolorg: 0.045
+        bgcolorb: 0.085
+      position:
+      - 0
+      - -1040
+    - name: label_src_cloud
+      type: textCOMP
+      parameters:
+        text: POINT CLOUD
+        callbacks: label_src_cloud_callbacks
+        fontsize: 9
+        fontcolorr: 0.62
+        fontcolorg: 0.58
+        fontcolorb: 0.72
+        y: 516
+        h: 16
+        bgcolorr: 0.055
+        bgcolorg: 0.045
+        bgcolorb: 0.085
+      position:
+      - 0
+      - -260
+    - name: par_ctrl_signal
+      type: parameterCOMP
+      parameters:
+        op: /project1/ctrl_signal
+        y: 532
+        h: 94
+      position:
+      - 300
+      - 0
+    - name: label_ctrl_signal
+      type: textCOMP
+      parameters:
+        text: EEG SIGNAL
+        callbacks: label_ctrl_signal_callbacks
+        fontsize: 9
+        fontcolorr: 0.62
+        fontcolorg: 0.58
+        fontcolorb: 0.72
+        y: 632
+        h: 16
+        bgcolorr: 0.055
+        bgcolorg: 0.045
+        bgcolorb: 0.085
+    - name: label_title_callbacks
+      type: textDAT
+      parameters:
+        language: python
+      flags:
+      - viewer
+      - -showDocked
+      position:
+      - 0
+      - 40
+      size:
+      - 160
+      - 130
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      dock: label_title
+      dat_content: "# Text Component callbacks\n\nfrom typing import Any, Dict\n\ndef onValueChange(comp: textCOMP, value:\
+        \ str, prevValue: str):\n\t\"\"\"\n\tCalled whenever the text component's value parameter changes for any reason\n\
+        \tincluding typing in the text window or changing the parameter directly. The\n\tcallback is equivalent to the onValueChange\
+        \ in the parameter exectute DAT.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue:\
+        \ the previous value\n\t\"\"\"\n\t#debug('\\nonValueChange comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev\
+        \ value: ', prevValue )\n\treturn\n\t\ndef onFocus(comp: textCOMP):\n\t\"\"\"\n\tCalled when one of the text components\
+        \ viewers gets keyboard focus. \n\t\n\tArgs:\n\t\tcomp: the text component\n\t\"\"\"\n\t#debug('\\nonFocus comp:',\
+        \ comp.path)\n\treturn\n\ndef onFocusEnd(comp: textCOMP, info: Dict[str, str]):\n\t\"\"\"\n\tCalled when one of the\
+        \ text component's viewers loses keyboard focus. In\n\tregular editing mode this is right after the contents are saved\
+        \ back to the\n\tvalue parameter. This function is called everytime the viewer loses focus,\n\teven if the text does\
+        \ not change.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tinfo: a dictionary containing information about the\
+        \ event including:\n\t\t\treason: a string indicating what caused the viewer to lose focus\n\t\t\t\te.g. 'enter',\
+        \ 'escape', 'tab', 'unknown'\n\t\n\t\"\"\"\n\t#debug('\\nonFocusEnd comp:', comp.path, '- info:\\n', info)\n\treturn\n\
+        \t\ndef onTextEdit(comp: textCOMP):\n\t\"\"\"\n\tCalled each time the contents of the text component viewer change\
+        \ i.e. when\n\ttyping a character, deleting text, cutting or pasting. \n\t\n\tArgs:\n\t\tcomp: the text component\n\
+        \t\"\"\"\n\t#debug('\\nonTextEdit comp:', comp.path, '- text: ', comp.editText)\n\treturn\n\t\ndef onTextEditEnd(comp:\
+        \ textCOMP, value: str, prevValue: str):\n\t\"\"\"\n\tCalled when the user finishes editing and the value has been\
+        \ changed. Not\n\tcalled in 'Continuous Edit' mode. Use onTextEdit and onFocusEnd when using\n\tcontinuous editing.\n\
+        \n\tNote: Any Python undo blocks created by this callback will be included in\n\tthe undo step for the change to the\
+        \ text field.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue: the previous value\n\
+        \t\"\"\"\n\t#debug('\\nonTextEditEnd comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev value: ', prevValue\
+        \ )\n\treturn\n"
+      dat_content_format: text
+    - name: label_render_callbacks
+      type: textDAT
+      parameters:
+        language: python
+      flags:
+      - viewer
+      - -showDocked
+      position:
+      - 400
+      - -610
+      size:
+      - 160
+      - 130
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      dock: label_render
+      dat_content: "# Text Component callbacks\n\nfrom typing import Any, Dict\n\ndef onValueChange(comp: textCOMP, value:\
+        \ str, prevValue: str):\n\t\"\"\"\n\tCalled whenever the text component's value parameter changes for any reason\n\
+        \tincluding typing in the text window or changing the parameter directly. The\n\tcallback is equivalent to the onValueChange\
+        \ in the parameter exectute DAT.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue:\
+        \ the previous value\n\t\"\"\"\n\t#debug('\\nonValueChange comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev\
+        \ value: ', prevValue )\n\treturn\n\t\ndef onFocus(comp: textCOMP):\n\t\"\"\"\n\tCalled when one of the text components\
+        \ viewers gets keyboard focus. \n\t\n\tArgs:\n\t\tcomp: the text component\n\t\"\"\"\n\t#debug('\\nonFocus comp:',\
+        \ comp.path)\n\treturn\n\ndef onFocusEnd(comp: textCOMP, info: Dict[str, str]):\n\t\"\"\"\n\tCalled when one of the\
+        \ text component's viewers loses keyboard focus. In\n\tregular editing mode this is right after the contents are saved\
+        \ back to the\n\tvalue parameter. This function is called everytime the viewer loses focus,\n\teven if the text does\
+        \ not change.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tinfo: a dictionary containing information about the\
+        \ event including:\n\t\t\treason: a string indicating what caused the viewer to lose focus\n\t\t\t\te.g. 'enter',\
+        \ 'escape', 'tab', 'unknown'\n\t\n\t\"\"\"\n\t#debug('\\nonFocusEnd comp:', comp.path, '- info:\\n', info)\n\treturn\n\
+        \t\ndef onTextEdit(comp: textCOMP):\n\t\"\"\"\n\tCalled each time the contents of the text component viewer change\
+        \ i.e. when\n\ttyping a character, deleting text, cutting or pasting. \n\t\n\tArgs:\n\t\tcomp: the text component\n\
+        \t\"\"\"\n\t#debug('\\nonTextEdit comp:', comp.path, '- text: ', comp.editText)\n\treturn\n\t\ndef onTextEditEnd(comp:\
+        \ textCOMP, value: str, prevValue: str):\n\t\"\"\"\n\tCalled when the user finishes editing and the value has been\
+        \ changed. Not\n\tcalled in 'Continuous Edit' mode. Use onTextEdit and onFocusEnd when using\n\tcontinuous editing.\n\
+        \n\tNote: Any Python undo blocks created by this callback will be included in\n\tthe undo step for the change to the\
+        \ text field.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue: the previous value\n\
+        \t\"\"\"\n\t#debug('\\nonTextEditEnd comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev value: ', prevValue\
+        \ )\n\treturn\n"
+      dat_content_format: text
+    - name: label_fx_pulse_callbacks
+      type: textDAT
+      parameters:
+        language: python
+      flags:
+      - viewer
+      - -showDocked
+      position:
+      - 400
+      - -460
+      size:
+      - 160
+      - 130
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      dock: label_fx_pulse
+      dat_content: "# Text Component callbacks\n\nfrom typing import Any, Dict\n\ndef onValueChange(comp: textCOMP, value:\
+        \ str, prevValue: str):\n\t\"\"\"\n\tCalled whenever the text component's value parameter changes for any reason\n\
+        \tincluding typing in the text window or changing the parameter directly. The\n\tcallback is equivalent to the onValueChange\
+        \ in the parameter exectute DAT.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue:\
+        \ the previous value\n\t\"\"\"\n\t#debug('\\nonValueChange comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev\
+        \ value: ', prevValue )\n\treturn\n\t\ndef onFocus(comp: textCOMP):\n\t\"\"\"\n\tCalled when one of the text components\
+        \ viewers gets keyboard focus. \n\t\n\tArgs:\n\t\tcomp: the text component\n\t\"\"\"\n\t#debug('\\nonFocus comp:',\
+        \ comp.path)\n\treturn\n\ndef onFocusEnd(comp: textCOMP, info: Dict[str, str]):\n\t\"\"\"\n\tCalled when one of the\
+        \ text component's viewers loses keyboard focus. In\n\tregular editing mode this is right after the contents are saved\
+        \ back to the\n\tvalue parameter. This function is called everytime the viewer loses focus,\n\teven if the text does\
+        \ not change.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tinfo: a dictionary containing information about the\
+        \ event including:\n\t\t\treason: a string indicating what caused the viewer to lose focus\n\t\t\t\te.g. 'enter',\
+        \ 'escape', 'tab', 'unknown'\n\t\n\t\"\"\"\n\t#debug('\\nonFocusEnd comp:', comp.path, '- info:\\n', info)\n\treturn\n\
+        \t\ndef onTextEdit(comp: textCOMP):\n\t\"\"\"\n\tCalled each time the contents of the text component viewer change\
+        \ i.e. when\n\ttyping a character, deleting text, cutting or pasting. \n\t\n\tArgs:\n\t\tcomp: the text component\n\
+        \t\"\"\"\n\t#debug('\\nonTextEdit comp:', comp.path, '- text: ', comp.editText)\n\treturn\n\t\ndef onTextEditEnd(comp:\
+        \ textCOMP, value: str, prevValue: str):\n\t\"\"\"\n\tCalled when the user finishes editing and the value has been\
+        \ changed. Not\n\tcalled in 'Continuous Edit' mode. Use onTextEdit and onFocusEnd when using\n\tcontinuous editing.\n\
+        \n\tNote: Any Python undo blocks created by this callback will be included in\n\tthe undo step for the change to the\
+        \ text field.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue: the previous value\n\
+        \t\"\"\"\n\t#debug('\\nonTextEditEnd comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev value: ', prevValue\
+        \ )\n\treturn\n"
+      dat_content_format: text
+    - name: label_bg_aurora_callbacks
+      type: textDAT
+      parameters:
+        language: python
+      flags:
+      - viewer
+      - -showDocked
+      position:
+      - 400
+      - -910
+      size:
+      - 160
+      - 130
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      dock: label_bg_aurora
+      dat_content: "# Text Component callbacks\n\nfrom typing import Any, Dict\n\ndef onValueChange(comp: textCOMP, value:\
+        \ str, prevValue: str):\n\t\"\"\"\n\tCalled whenever the text component's value parameter changes for any reason\n\
+        \tincluding typing in the text window or changing the parameter directly. The\n\tcallback is equivalent to the onValueChange\
+        \ in the parameter exectute DAT.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue:\
+        \ the previous value\n\t\"\"\"\n\t#debug('\\nonValueChange comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev\
+        \ value: ', prevValue )\n\treturn\n\t\ndef onFocus(comp: textCOMP):\n\t\"\"\"\n\tCalled when one of the text components\
+        \ viewers gets keyboard focus. \n\t\n\tArgs:\n\t\tcomp: the text component\n\t\"\"\"\n\t#debug('\\nonFocus comp:',\
+        \ comp.path)\n\treturn\n\ndef onFocusEnd(comp: textCOMP, info: Dict[str, str]):\n\t\"\"\"\n\tCalled when one of the\
+        \ text component's viewers loses keyboard focus. In\n\tregular editing mode this is right after the contents are saved\
+        \ back to the\n\tvalue parameter. This function is called everytime the viewer loses focus,\n\teven if the text does\
+        \ not change.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tinfo: a dictionary containing information about the\
+        \ event including:\n\t\t\treason: a string indicating what caused the viewer to lose focus\n\t\t\t\te.g. 'enter',\
+        \ 'escape', 'tab', 'unknown'\n\t\n\t\"\"\"\n\t#debug('\\nonFocusEnd comp:', comp.path, '- info:\\n', info)\n\treturn\n\
+        \t\ndef onTextEdit(comp: textCOMP):\n\t\"\"\"\n\tCalled each time the contents of the text component viewer change\
+        \ i.e. when\n\ttyping a character, deleting text, cutting or pasting. \n\t\n\tArgs:\n\t\tcomp: the text component\n\
+        \t\"\"\"\n\t#debug('\\nonTextEdit comp:', comp.path, '- text: ', comp.editText)\n\treturn\n\t\ndef onTextEditEnd(comp:\
+        \ textCOMP, value: str, prevValue: str):\n\t\"\"\"\n\tCalled when the user finishes editing and the value has been\
+        \ changed. Not\n\tcalled in 'Continuous Edit' mode. Use onTextEdit and onFocusEnd when using\n\tcontinuous editing.\n\
+        \n\tNote: Any Python undo blocks created by this callback will be included in\n\tthe undo step for the change to the\
+        \ text field.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue: the previous value\n\
+        \t\"\"\"\n\t#debug('\\nonTextEditEnd comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev value: ', prevValue\
+        \ )\n\treturn\n"
+      dat_content_format: text
+    - name: label_composite_callbacks
+      type: textDAT
+      parameters:
+        language: python
+      flags:
+      - viewer
+      - -showDocked
+      position:
+      - 400
+      - -760
+      size:
+      - 160
+      - 130
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      dock: label_composite
+      dat_content: "# Text Component callbacks\n\nfrom typing import Any, Dict\n\ndef onValueChange(comp: textCOMP, value:\
+        \ str, prevValue: str):\n\t\"\"\"\n\tCalled whenever the text component's value parameter changes for any reason\n\
+        \tincluding typing in the text window or changing the parameter directly. The\n\tcallback is equivalent to the onValueChange\
+        \ in the parameter exectute DAT.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue:\
+        \ the previous value\n\t\"\"\"\n\t#debug('\\nonValueChange comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev\
+        \ value: ', prevValue )\n\treturn\n\t\ndef onFocus(comp: textCOMP):\n\t\"\"\"\n\tCalled when one of the text components\
+        \ viewers gets keyboard focus. \n\t\n\tArgs:\n\t\tcomp: the text component\n\t\"\"\"\n\t#debug('\\nonFocus comp:',\
+        \ comp.path)\n\treturn\n\ndef onFocusEnd(comp: textCOMP, info: Dict[str, str]):\n\t\"\"\"\n\tCalled when one of the\
+        \ text component's viewers loses keyboard focus. In\n\tregular editing mode this is right after the contents are saved\
+        \ back to the\n\tvalue parameter. This function is called everytime the viewer loses focus,\n\teven if the text does\
+        \ not change.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tinfo: a dictionary containing information about the\
+        \ event including:\n\t\t\treason: a string indicating what caused the viewer to lose focus\n\t\t\t\te.g. 'enter',\
+        \ 'escape', 'tab', 'unknown'\n\t\n\t\"\"\"\n\t#debug('\\nonFocusEnd comp:', comp.path, '- info:\\n', info)\n\treturn\n\
+        \t\ndef onTextEdit(comp: textCOMP):\n\t\"\"\"\n\tCalled each time the contents of the text component viewer change\
+        \ i.e. when\n\ttyping a character, deleting text, cutting or pasting. \n\t\n\tArgs:\n\t\tcomp: the text component\n\
+        \t\"\"\"\n\t#debug('\\nonTextEdit comp:', comp.path, '- text: ', comp.editText)\n\treturn\n\t\ndef onTextEditEnd(comp:\
+        \ textCOMP, value: str, prevValue: str):\n\t\"\"\"\n\tCalled when the user finishes editing and the value has been\
+        \ changed. Not\n\tcalled in 'Continuous Edit' mode. Use onTextEdit and onFocusEnd when using\n\tcontinuous editing.\n\
+        \n\tNote: Any Python undo blocks created by this callback will be included in\n\tthe undo step for the change to the\
+        \ text field.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue: the previous value\n\
+        \t\"\"\"\n\t#debug('\\nonTextEditEnd comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev value: ', prevValue\
+        \ )\n\treturn\n"
+      dat_content_format: text
+    - name: label_src_cloud_callbacks
+      type: textDAT
+      parameters:
+        language: python
+      flags:
+      - viewer
+      - -showDocked
+      position:
+      - 400
+      - -310
+      size:
+      - 160
+      - 130
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      dock: label_src_cloud
+      dat_content: "# Text Component callbacks\n\nfrom typing import Any, Dict\n\ndef onValueChange(comp: textCOMP, value:\
+        \ str, prevValue: str):\n\t\"\"\"\n\tCalled whenever the text component's value parameter changes for any reason\n\
+        \tincluding typing in the text window or changing the parameter directly. The\n\tcallback is equivalent to the onValueChange\
+        \ in the parameter exectute DAT.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue:\
+        \ the previous value\n\t\"\"\"\n\t#debug('\\nonValueChange comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev\
+        \ value: ', prevValue )\n\treturn\n\t\ndef onFocus(comp: textCOMP):\n\t\"\"\"\n\tCalled when one of the text components\
+        \ viewers gets keyboard focus. \n\t\n\tArgs:\n\t\tcomp: the text component\n\t\"\"\"\n\t#debug('\\nonFocus comp:',\
+        \ comp.path)\n\treturn\n\ndef onFocusEnd(comp: textCOMP, info: Dict[str, str]):\n\t\"\"\"\n\tCalled when one of the\
+        \ text component's viewers loses keyboard focus. In\n\tregular editing mode this is right after the contents are saved\
+        \ back to the\n\tvalue parameter. This function is called everytime the viewer loses focus,\n\teven if the text does\
+        \ not change.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tinfo: a dictionary containing information about the\
+        \ event including:\n\t\t\treason: a string indicating what caused the viewer to lose focus\n\t\t\t\te.g. 'enter',\
+        \ 'escape', 'tab', 'unknown'\n\t\n\t\"\"\"\n\t#debug('\\nonFocusEnd comp:', comp.path, '- info:\\n', info)\n\treturn\n\
+        \t\ndef onTextEdit(comp: textCOMP):\n\t\"\"\"\n\tCalled each time the contents of the text component viewer change\
+        \ i.e. when\n\ttyping a character, deleting text, cutting or pasting. \n\t\n\tArgs:\n\t\tcomp: the text component\n\
+        \t\"\"\"\n\t#debug('\\nonTextEdit comp:', comp.path, '- text: ', comp.editText)\n\treturn\n\t\ndef onTextEditEnd(comp:\
+        \ textCOMP, value: str, prevValue: str):\n\t\"\"\"\n\tCalled when the user finishes editing and the value has been\
+        \ changed. Not\n\tcalled in 'Continuous Edit' mode. Use onTextEdit and onFocusEnd when using\n\tcontinuous editing.\n\
+        \n\tNote: Any Python undo blocks created by this callback will be included in\n\tthe undo step for the change to the\
+        \ text field.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue: the previous value\n\
+        \t\"\"\"\n\t#debug('\\nonTextEditEnd comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev value: ', prevValue\
+        \ )\n\treturn\n"
+      dat_content_format: text
+    - name: label_ctrl_signal_callbacks
+      type: textDAT
+      parameters:
+        language: python
+      flags:
+      - viewer
+      - -showDocked
+      position:
+      - 400
+      - -160
+      size:
+      - 160
+      - 130
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+      dock: label_ctrl_signal
+      dat_content: "# Text Component callbacks\n\nfrom typing import Any, Dict\n\ndef onValueChange(comp: textCOMP, value:\
+        \ str, prevValue: str):\n\t\"\"\"\n\tCalled whenever the text component's value parameter changes for any reason\n\
+        \tincluding typing in the text window or changing the parameter directly. The\n\tcallback is equivalent to the onValueChange\
+        \ in the parameter exectute DAT.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue:\
+        \ the previous value\n\t\"\"\"\n\t#debug('\\nonValueChange comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev\
+        \ value: ', prevValue )\n\treturn\n\t\ndef onFocus(comp: textCOMP):\n\t\"\"\"\n\tCalled when one of the text components\
+        \ viewers gets keyboard focus. \n\t\n\tArgs:\n\t\tcomp: the text component\n\t\"\"\"\n\t#debug('\\nonFocus comp:',\
+        \ comp.path)\n\treturn\n\ndef onFocusEnd(comp: textCOMP, info: Dict[str, str]):\n\t\"\"\"\n\tCalled when one of the\
+        \ text component's viewers loses keyboard focus. In\n\tregular editing mode this is right after the contents are saved\
+        \ back to the\n\tvalue parameter. This function is called everytime the viewer loses focus,\n\teven if the text does\
+        \ not change.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tinfo: a dictionary containing information about the\
+        \ event including:\n\t\t\treason: a string indicating what caused the viewer to lose focus\n\t\t\t\te.g. 'enter',\
+        \ 'escape', 'tab', 'unknown'\n\t\n\t\"\"\"\n\t#debug('\\nonFocusEnd comp:', comp.path, '- info:\\n', info)\n\treturn\n\
+        \t\ndef onTextEdit(comp: textCOMP):\n\t\"\"\"\n\tCalled each time the contents of the text component viewer change\
+        \ i.e. when\n\ttyping a character, deleting text, cutting or pasting. \n\t\n\tArgs:\n\t\tcomp: the text component\n\
+        \t\"\"\"\n\t#debug('\\nonTextEdit comp:', comp.path, '- text: ', comp.editText)\n\treturn\n\t\ndef onTextEditEnd(comp:\
+        \ textCOMP, value: str, prevValue: str):\n\t\"\"\"\n\tCalled when the user finishes editing and the value has been\
+        \ changed. Not\n\tcalled in 'Continuous Edit' mode. Use onTextEdit and onFocusEnd when using\n\tcontinuous editing.\n\
+        \n\tNote: Any Python undo blocks created by this callback will be included in\n\tthe undo step for the change to the\
+        \ text field.\n\t\n\tArgs:\n\t\tcomp: the text component\n\t\tvalue: the new value\n\t\tprevValue: the previous value\n\
+        \t\"\"\"\n\t#debug('\\nonTextEditEnd comp:', comp.path, '- new value: ', value,\n\t#\t  ', prev value: ', prevValue\
+        \ )\n\treturn\n"
+      dat_content_format: text
+- name: ctrl_signal
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Smoothing
+      style: Float
+      startSection: true
+      default: 0.85
+      max: 0.99
+      clampMin: true
+      clampMax: true
+      normMax: 0.99
+      help: 'Signal inertia: higher means the brain reacts more slowly and more gently.'
+      value: 0
+    - name: Excitation
+      style: Float
+      default: 0.5
+      clampMin: true
+      clampMax: true
+      help: 'Simulated activity level: 0 is complete rest and a frozen shape, 1 is maximum agitation.'
+      value: 0
+    - name: Source
+      style: Menu
+      default: mock
+      menuNames:
+      - mock
+      - osc
+      menuLabels:
+      - Mock (bruit simule)
+      - OSC (casque EEG)
+      help: 'Where the signal comes from: the simulated noise, or an EEG headset connected over OSC.'
+      value: osc
+  position:
+  - 0
+  - -1600
+  children:
+  - name: out1
+    type: outCHOP
+    parameters:
+      label: =me.name
+      autoexportroot: =parent()
+    position:
+    - 1400
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - limit_clamp
+  - name: const_osc
+    type: constantCHOP
+    sequences:
+      const:
+      - name: alpha
+      - name: beta
+      - name: theta
+    position:
+    - 400
+    - -400
+  - name: math_norm
+    type: mathCHOP
+    parameters:
+      fromrange1: -1
+    position:
+    - 200
+    - 0
+    inputs:
+    - noise_eeg
+  - name: noise_eeg
+    type: noiseCHOP
+    parameters:
+      period: 6
+      tz: =absTime.seconds * 0.15
+      channelname: alpha beta theta
+      end: 0
+      rate: =me.time.rate
+      autoexportroot: =parent()
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: oscin_eeg
+    type: oscinCHOP
+    parameters:
+      active: =parent().par.Source.menuIndex == 1
+      autoexportroot: =parent()
+    position:
+    - 400
+    - -600
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: lag_smooth
+    type: lagCHOP
+    parameters:
+      lag1: =parent().par.Smoothing.eval() * 2
+      lag2: =parent().par.Smoothing.eval() * 2
+      autoexportroot: =parent()
+    position:
+    - 400
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - math_norm
+  - name: limit_clamp
+    type: limitCHOP
+    parameters:
+      type: clamp
+      min: 0
+      autoexportroot: =parent()
+    position:
+    - 1200
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - switch_source
+  - name: math_excite
+    type: mathCHOP
+    parameters:
+      gain: =parent().par.Excitation.eval() * 0.55
+      postoff: =parent().par.Excitation.eval() * 0.45
+    position:
+    - 600
+    - 0
+    inputs:
+    - lag_smooth
+  - name: replace_osc
+    type: replaceCHOP
+    parameters:
+      autoexportroot: =parent()
+    position:
+    - 800
+    - -400
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - const_osc
+    - oscin_eeg
+  - name: switch_source
+    type: switchCHOP
+    parameters:
+      index: =parent().par.Source.menuIndex
+      autoexportroot: =parent()
+    position:
+    - 1000
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - math_excite
+    - replace_osc
+  annotations:
+  - name: annotate
+    mode: annotate
+    title: Normalized EEG signal
+    text: The only entry point for the signal. Simulated noise (alpha, beta, theta) is mapped to 0-1, smoothed by Smoothing,
+      scaled by Excitation, then clamped. The OSC branch opens its socket only when Source switches to osc; the constant guarantees
+      three channels even with no headset.
+    position:
+    - -70
+    - -670
+    size:
+    - 1670
+    - 930
+    color:
+    - 0.45
+    - 0.45
+    - 0.45
+- name: out_fx_pulse
+  type: nullPOP
+  position:
+  - 1600
+  - -600
+  inputs:
+  - fx_pulse
+- name: out_bg_aurora
+  type: nullTOP
+  position:
+  - 2800
+  - -1600
+  inputs:
+  - bg_aurora
+- name: out_src_cloud
+  type: nullPOP
+  position:
+  - 400
+  - -600
+  inputs:
+  - src_cloud
+- name: out_ctrl_signal
+  type: nullCHOP
+  parameters:
+    autoexportroot: =parent()
+  position:
+  - 400
+  - -1600
+  size:
+  - 130
+  - 90
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  inputs:
+  - ctrl_signal
+annotations:
+- name: annotate
+  mode: networkbox
+  title: 7. Control panel
+  text: 'Perform window: the render as background, the six stages'' parameters top right.'
+  position:
+  - 4730
+  - -670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.45
+  - 0.45
+  - 0.45
+- name: annotate1
+  mode: networkbox
+  title: 1. EEG signal
+  text: Normalizes and smooths the three bands to 0-1. The only entry point for the signal.
+  position:
+  - -70
+  - -1670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.45
+  - 0.45
+  - 0.45
+- name: annotate2
+  mode: networkbox
+  title: 2. Point cloud
+  text: Loads the brain surface ply with its normals, seeds and decimates by Density.
+  position:
+  - -70
+  - -670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.45
+  - 0.45
+  - 0.45
+- name: annotate3
+  mode: networkbox
+  title: 3. Pulsation
+  text: Breathing, activity focus, colour and lighting of the points, on the GPU.
+  position:
+  - 1130
+  - -670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.45
+  - 0.45
+  - 0.45
+- name: annotate4
+  mode: networkbox
+  title: 4. Render
+  text: Additive sprites, sweeping camera, mouse rotation, depth cues.
+  position:
+  - 2330
+  - -670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.45
+  - 0.45
+  - 0.45
+- name: annotate5
+  mode: networkbox
+  title: 5. Aurora background
+  text: Sky blue veils drifting over deep navy, bounded so they stay behind the brain.
+  position:
+  - 2330
+  - -1670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.45
+  - 0.45
+  - 0.45
+- name: annotate6
+  mode: networkbox
+  title: 6. Composite
+  text: Trails, composite over the background, glow and tone map. Final output.
+  position:
+  - 3530
+  - -670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.45
+  - 0.45
+  - 0.45
+note: The six pipeline stages plus the control panel. Embody (tagged tdxn_exclude) and its externalizations table are out
+  of this export.
