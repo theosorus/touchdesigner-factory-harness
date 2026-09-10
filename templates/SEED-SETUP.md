@@ -1,206 +1,177 @@
-# Préparer le seed TD — tutoriel détaillé (une seule fois, ~5 minutes)
+# Preparing the TD seed (once, about five minutes)
 
-**Ce que tu produis** : `templates/seed.toe`, un projet TouchDesigner vierge contenant Embody + Envoy, configurés pour ce dépôt. Chaque nouveau projet scaffoldé repartira de ce seed : `scripts/new_project.py` le copie en `projects/<slug>/project.toe`, Embody et Envoy déjà dedans.
+**What you produce**: `templates/seed.toe`, a blank TouchDesigner project containing Embody +
+Envoy, configured for this repository. Every scaffolded project starts from that seed —
+`scripts/new_project.py` copies it to `projects/<slug>/project.toe` with Embody and Envoy
+already inside.
 
-**État de la machine, vérifié** :
+**Prerequisites**
 
-| Prérequis | État |
+| Requirement | Note |
 |---|---|
-| TouchDesigner 2025.33070+ | OK — 2025.33070 dans `/Applications/TouchDesigner.app`, instance en cours d'exécution |
-| Dépôt git | OK — `experimental_mcp_td`, branche `main`, rien commité pour l'instant |
-| Python 3.11+ / pyyaml | OK — 3.13.9 / 6.0.3 |
-| Embody + Envoy | Absents — c'est ce que ce tuto installe |
+| TouchDesigner 2025.33070+ | any licence; Non-Commercial caps render output at 1280x720 |
+| A git repository | this repo, cloned |
+| Python 3.11+ with PyYAML | for the scaffold and validation scripts |
+| Embody + Envoy | installed by this guide |
 
-Diagnostic machine à tout moment :
+Check the machine at any time:
 
 ```bash
 python3 scripts/check_env.py
 ```
 
-Actuellement : `NOT READY: 3 items missing` (`.mcp.json`, bridge Envoy, seed.toe). À la fin de ce tuto : `SEED READY`.
+Before this guide it prints `NOT READY` (missing `.mcp.json`, Envoy bridge, seed.toe). At the
+end: `SEED READY`.
 
-**Vue d'ensemble** :
+**Overview**
 
-| # | Action | Où | Durée |
+| # | Action | Where | Time |
 |---|---|---|---|
-| 0 | Committer l'usine | Terminal | 20 s |
-| 1 | Sauvegarder le projet vierge en `templates/seed.toe` | TouchDesigner | 30 s |
-| 2 | Installer Embody (une ligne dans le Textport) | TouchDesigner | 1 min |
-| 3 | Passer le Setup Wizard écran par écran | TouchDesigner | 2 min |
-| 4 | Vérifier, réconcilier avec nos fichiers, committer | Terminal + TD | 1 min |
+| 0 | Commit the factory | Terminal | 20 s |
+| 1 | Save the blank project as `templates/seed.toe` | TouchDesigner | 30 s |
+| 2 | Install Embody (one line in the Textport) | TouchDesigner | 1 min |
+| 3 | Walk the Setup Wizard | TouchDesigner | 2 min |
+| 4 | Verify, reconcile, commit | Terminal + TD | 1 min |
 
-Pourquoi sauvegarder *avant* d'installer (étape 1 avant 2) : le wizard exige un projet déjà sauvegardé — sinon son premier écran est "Save your project", et tout ce qu'il configure atterrit *relatif au dossier du projet*. En sauvegardant d'abord au bon endroit, cet écran disparaît et la config atterrit à la racine du dépôt.
+Why save *before* installing (step 1 before 2): the wizard requires an already-saved project —
+otherwise its first screen is "Save your project", and everything it configures lands *relative
+to the project folder*. Saving in the right place first makes that screen disappear and puts the
+configuration at the repo root.
 
 ---
 
-## Étape 0 — Committer l'usine
+## Step 0 — Commit the factory
 
-Le wizard va écrire dans ce dépôt : `.mcp.json`, `.embody/`, des fichiers dans `.claude/`, et potentiellement réécrire `AGENTS.md`. Un commit propre avant garantit que rien de ce que nous avons écrit ne peut être perdu, et permet de voir exactement ce qu'Embody ajoute (`git status`).
+The wizard writes into this repo: `.mcp.json`, `.embody/`, files under `.claude/`, and possibly
+a regenerated `AGENTS.md`. A clean commit first guarantees nothing of yours can be lost, and lets
+you see exactly what Embody adds (`git status`).
 
 ```bash
-cd /Users/tcastillo/Documents/experimental_mcp_td
-git add -A
-git commit -m "TD Factory: init"
+git add -A && git commit -m "factory before Embody"
 ```
-
-Sortie attendue : un commit avec ~25 fichiers (`.claude/`, `AGENTS.md`, `ARCHITECTURE.md`, `scripts/`, `templates/`, `knowledge/`, `lib/`, `projects/`, `README.md`, `.gitignore`).
 
 ---
 
-## Étape 1 — Sauvegarder le projet vierge en seed
+## Step 1 — Save the blank project as the seed
 
-Dans TouchDesigner (l'instance déjà ouverte) :
+In TouchDesigner:
 
-1. Si le projet actuellement ouvert n'est **pas** vierge : **File > New** (Cmd+N) pour repartir d'un projet vide. Un projet non sauvegardé et vide convient aussi.
+1. If the currently open project is **not** blank: **File > New** (Cmd+N). An unsaved empty
+   project works too.
 2. **File > Save As** (Cmd+Shift+S).
-3. Navigue jusqu'à :
+3. Navigate to `<repo>/templates/seed.toe` and save.
 
-```
-/Users/tcastillo/Documents/experimental_mcp_td/templates/seed.toe
-```
-
-4. Enregistre. Le fichier est encore un `.toe` ordinaire — Embody arrive à l'étape suivante. On le re-sauvegardera une dernière fois à la fin pour qu'il contienne Embody configuré.
+The file is still an ordinary `.toe` — Embody arrives in the next step, and you will save once
+more at the end so the seed actually contains it.
 
 ---
 
-## Étape 2 — Installer Embody
+## Step 2 — Install Embody
 
-1. Ouvre le Textport : **Dialogs > Textport and DATs**, ou **Alt+T**.
-2. Colle cette ligne officielle (elle télécharge la dernière release depuis GitHub, vérifie son checksum sha256, et charge le COMP Embody dans le réseau courant — exactement comme un drag & drop du `.tox`) :
+1. Open the Textport: **Dialogs > Textport and DATs**, or **Alt+T**.
+2. Paste the official one-liner (it downloads the latest release from GitHub, verifies its
+   sha256, and loads the Embody COMP into the current network — exactly like dragging the `.tox`
+   in):
 
 ```python
 import requests, hashlib, tempfile, os; h = {'User-Agent': 'Embody-Install'}; mf = requests.get('https://github.com/dylanroscover/Embody/releases/latest/download/embody-release.json', headers=h, timeout=30).json(); b = requests.get('https://github.com/dylanroscover/Embody/releases/download/%s/%s' % (mf['tag'], mf['asset']), headers=h, timeout=120).content; assert hashlib.sha256(b).hexdigest() == mf['sha256'], 'checksum mismatch'; f = os.path.join(tempfile.gettempdir(), mf['asset']); open(f, 'wb').write(b); n = ui.panes.current; n = n if n.type == PaneType.NETWORKEDITOR else next(x for x in ui.panes if x.type == PaneType.NETWORKEDITOR); print('Embody', mf['version'], 'installed at', n.owner.loadTox(f).path)
 ```
 
-3. Entrée. TD pause quelques secondes pendant le téléchargement (~quelques Mo), puis le Textport affiche :
+3. Press Enter. TD pauses for a few seconds while it downloads, then the Textport prints
+   something like `Embody 6.2.42 installed at /project1/Embody`, and the `Embody` COMP appears in
+   the network.
+4. Embody initializes within a few frames, then **the Setup Wizard opens on its own**.
 
-```
-Embody 6.2.42 installed at /project1/Embody
-```
-
-(le numéro de version peut être plus récent). Le COMP `Embody` apparaît dans le réseau.
-
-4. Embody s'initialise en quelques frames, puis **le Setup Wizard s'ouvre tout seul**.
-
-**Si la ligne échoue** (réseau, proxy, requests indisponible) : télécharge le `.tox` sur `github.com/dylanroscover/Embody/releases/latest` et glisse-le dans le réseau — même résultat.
+**If the one-liner fails** (network, proxy, requests unavailable): download the `.tox` from
+`github.com/dylanroscover/Embody/releases/latest` and drag it into the network — same result.
 
 ---
 
-## Étape 3 — Le Setup Wizard, écran par écran
+## Step 3 — The Setup Wizard, screen by screen
 
-Le wizard s'adapte : certains écrans n'apparaissent que si leur question se pose. **Rien ne change avant le clic final** — chaque écran ne fait qu'enregistrer une sélection ; tu peux fermer ("Not now") à tout moment sans toucher au projet.
+The wizard adapts: some screens only appear when their question applies. **Nothing changes until
+the final click** — every screen only records a selection, and you can close it ("Not now") at
+any point without touching the project.
 
-Écrans dans l'ordre, avec le choix à faire pour cette usine :
-
-| Écran | Choix | Pourquoi |
+| Screen | Choice | Why |
 |---|---|---|
-| 1. Save your project | **N'apparaît pas** (projet sauvé à l'étape 1) | C'est l'intérêt d'avoir sauvegardé d'abord |
-| 2. Mode | **Auto** (recommandé) | En Auto, la racine de config AI est la racine git automatiquement — exactement ce qu'on veut. Advanced affiche le choix explicitement (Git root / Project folder / Custom) plus un écran "footprint", inutile ici |
-| 3. Externalization | **New work only** (recommandé) — ou absent si le projet est vierge | L'externalisation des projets de l'usine est gérée par le Builder (TDXN via Envoy) |
-| 4. AI assistant | **Claude Code** (recommandé) | Génère `.mcp.json` + `.claude/` complet — le chemin auto-configuré |
-| 5. Pick your AI tool | N'apparaît pas (réservé à "Other AI tool") | — |
-| 6. Permissions (Claude Code) | **Don't ask** (recommandé) — ou **Ask for some** si tu préfère valider les écritures | Un build fait des dizaines d'appels d'outils ; "Don't ask" les pré-approuve tous (le serveur n'écoute que sur 127.0.0.1). "Ask for some" auto-approuve la lecture seulement |
-| 7. Convoy | **Keep Convoy Off** | Convoy = contrôle de plusieurs nodes Embody sur le LAN, et active une app hôte au login. Machine unique : inutile |
-| 8. Git | **N'apparaît pas** (le dépôt existe déjà) | Embody ajoute juste ses entrées à nos `.gitignore` / `.gitattributes` existants |
-| 9. Footprint review | Uniquement en mode Advanced | — |
-| 10. Summary | Relis, puis clique **Set up Embody** | C'est le seul clic qui applique quoi que ce soit |
+| 1. Save your project | **does not appear** (saved in step 1) | that is the point of saving first |
+| 2. Mode | **Auto** | in Auto the AI config root is the git root automatically, which is what this factory wants |
+| 3. Externalization | **New work only** — or absent on a blank project | the factory's externalization is driven by the Builder (TDXN over Envoy) |
+| 4. AI assistant | **Claude Code** | generates `.mcp.json` plus a complete `.claude/` |
+| 5. Pick your AI tool | does not appear (reserved for "Other AI tool") | — |
+| 6. Permissions | **Don't ask**, or **Ask for some** if you prefer to approve writes | a build makes dozens of tool calls; the server only listens on 127.0.0.1 |
+| 7. Convoy | **Keep Convoy Off** | Convoy drives several Embody nodes over the LAN and starts a host app at login; pointless on a single machine |
+| 8. Git | does not appear when the repo already exists | Embody just adds its entries to your `.gitignore` / `.gitattributes` |
+| 9. Footprint review | Advanced mode only | — |
+| 10. Summary | review, then click **Set up Embody** | the only click that applies anything |
 
-**Ce que fait le clic "Set up Embody"** :
+**What "Set up Embody" does**
 
-- écrit `.mcp.json` à la racine du dépôt (connexion MCP pour tout client compatible) ;
-- écrit le bridge `.embody/envoy-bridge.py` et démarre le serveur Envoy sur `127.0.0.1:9870` (ports 9870–9879 si plusieurs instances) ;
-- écrit ses propres rules et skills dans `.claude/` (elles s'ajoutent aux nôtres, pas de collision : les nôtres sont préfixées `td-`), et des skills dans `.agents/skills/` pour Codex/Cursor/Gemini ;
-- régénère `AGENTS.md` (le sien — voir l'étape 4) et **fusionne** un bloc auto-généré dans notre `CLAUDE.md`, délimité par un titre visible `## Embody / Envoy -- auto-generated section` : notre contenu est préservé tel quel ;
-- ajoute `.mcp.json`, `.embody/`, `.claude/settings.local.json` au `.gitignore` (fichiers runtime, régénérés au démarrage) ;
-- installe ~30 Mo de dépendances Python en tâche de fond — TD reste réactif.
+- writes `.mcp.json` at the repo root (MCP connection for any compatible client);
+- writes the `.embody/envoy-bridge.py` bridge and starts the Envoy server on `127.0.0.1:9870`
+  (ports 9870-9879 when several instances run);
+- writes its own rules and skills into `.claude/` (they sit alongside this factory's, which are
+  prefixed or named `td-*`, so nothing collides), plus skills in `.agents/skills/` for
+  Codex/Cursor/Gemini;
+- regenerates its `AGENTS.md` and **merges** an auto-generated block into `CLAUDE.md`, delimited
+  by a visible `## Embody / Envoy -- auto-generated section` heading: your own content is
+  preserved;
+- adds `.mcp.json`, `.embody/` and `.claude/settings.local.json` to `.gitignore` (runtime files,
+  regenerated on startup);
+- installs about 30 MB of Python dependencies in the background — TD stays responsive.
 
 ---
 
-## Étape 4 — Vérifier, réconcilier, committer
+## Step 4 — Verify, reconcile, commit
 
-### 4a. Re-sauvegarder le seed (crucial)
+### 4a. Save the seed again (crucial)
 
-Dans TouchDesigner : **Cmd+S**. Le `seed.toe` doit contenir Embody configuré — sans ce re-save, le seed sur disque est encore le projet vide de l'étape 1.
+In TouchDesigner: **Cmd+S**. The `seed.toe` must contain a configured Embody — without this
+second save, the file on disk is still the empty project from step 1.
 
-### 4b. Vérifier la machine
+### 4b. Check the machine
 
 ```bash
 python3 scripts/check_env.py
 ```
 
-Sortie attendue :
+You want `SEED READY`.
 
-```
-OK   python  (3.13.9)
-OK   pyyaml
-OK   touchdesigner  (2025.33070 at /Applications/TouchDesigner.app)
-OK   git repo  (/Users/tcastillo/Documents/experimental_mcp_td)
-OK   .mcp.json  (servers: ...)
-OK   envoy bridge  (.embody/envoy-bridge.py)
-OK   seed.toe  (templates/seed.toe)
-OK   td running  (pids: ...)
-OK   envoy listening  (127.0.0.1:9870)
+### 4c. Reconcile with this factory's files
 
-SEED READY: the factory can produce .toe projects.
-```
+Embody regenerates `AGENTS.md` for itself. This factory's `AGENTS.md` is the canonical entry
+point for the two roles, so check `git diff AGENTS.md`: keep the factory's rules at the top and
+let Embody's auto-generated block live below its own marker. The same applies to `CLAUDE.md`,
+where Embody merges into a delimited section and leaves the rest alone.
 
-### 4c. Réconcilier avec nos fichiers
+### 4d. Commit
 
 ```bash
-git status
-git diff AGENTS.md CLAUDE.md .gitignore
-```
-
-Point par point :
-
-- **`CLAUDE.md`** : Embody y a ajouté son bloc délimité entre ton contenu et le sien. C'est voulu, garde-le. Si un jour tu désinstalles Embody, le bloc part seul.
-- **`AGENTS.md`** : Embody régénère le sien (le fichier est "always written"). Si le nôtre a été remplacé — le titre `TD Factory: a two agent pipeline` a disparu — restaure-le :
-
-```bash
-git checkout -- AGENTS.md
-```
-
-  Puis réouvre le projet une ou deux fois pour vérifier si Embody le réécrit à chaque démarrage. Si c'est le cas, deux options : réécrire le fichier à chaque fois (un `git checkout -- AGENTS.md`), ou déplacer le contenu de l'usine dans un fichier que Embody ne touche pas (ex. `FACTORY.md`) référencé depuis `CLAUDE.md` et son bloc Embody. À décider quand tu l'auras observé.
-- **`.gitignore`** : Embody y a ajouté `.mcp.json`, `.embody/`, `.claude/settings.local.json` — normal, ce sont des fichiers runtime régénérés. Vérifie par contre que `*.toe` **n'y figure pas** : cette usine versionne les `.toe` (elle n'ignore que les backups TD, `*.[0-9].toe`). Si Embody a ajouté une ligne `*.toe`, supprime-la.
-- **`.claude/skills/`** : les ~14 skills Embody (`create-operator`, `mcp-tools-reference`, `td-api-reference`, `visual-aesthetics`, `pop-networks`, ...) s'ajoutent aux nôtres (`td-architect`, `td-builder`, `td-auto-improve`). C'est un plus direct pour le Builder : conventions TD détaillées chargées à la demande.
-
-### 4d. Committer
-
-```bash
-git add -A
-git commit -m "seed: Embody + Envoy configures"
+git add -A && git commit -m "seed: Embody + Envoy configured"
 ```
 
 ---
 
-## Tester la connexion (optionnel, rassurant)
+## Testing the connection (optional, reassuring)
 
-1. Dans TD, clique sur le COMP `Embody` > page **Envoy** : le bouton **Launch AI Client** ouvre Claude Code déjà pointé sur la racine du dépôt.
-2. Ou dans un terminal, depuis la racine du dépôt : `claude`.
-3. Demande : *"list all operators in the project"*. Si la liste revient, la chaîne complète fonctionne.
-
-**Pour opencode** (l'agent de cette session) : page **Envoy** du COMP, paramètre **Configure For** > ajouter **OpenCode**. La génération est additive : elle ajoute `opencode.json` et les skills partagés sans toucher à la config Claude Code. Tout autre client MCP (Codex, Cursor, Gemini) se configure pareil.
+Open an MCP client in the repo and ask it for `get_td_status`. It should report a live
+TouchDesigner and a reachable Envoy. If TD is not running, `launch_td` starts it.
 
 ---
 
-## Dépannage
+## Troubleshooting
 
-| Symptôme | Remède |
-|---|---|
-| La ligne du Textport échoue (réseau/checksum) | `.tox` manuel depuis `github.com/dylanroscover/Embody/releases/latest`, drag & drop dans le réseau |
-| Le wizard ne s'ouvre pas | Pulse **Setup Wizard** sur la page de paramètres du COMP Embody (il s'y rouvre, préréglé sur tes choix actuels) |
-| `check_env.py` : `envoy listening -> no localhost listener` | Vérifie **Envoy Enable** sur la page Envoy du COMP ; le serveur démarre au premier enable |
-| Port 9870 occupé | Normal si plusieurs instances TD avec Envoy : chaque instance prend 9870–9879, pas d'action |
-| `.mcp.json` écrit au mauvais endroit | Paramètre **AI Project Root** sur la page Envoy : remets `gitroot`, puis `op.Embody.InitEnvoy()` dans le Textport pour régénérer |
-| AGENTS.md réécrit à chaque démarrage TD | Voir 4c — `git checkout -- AGENTS.md`, et si ça persiste, déplacer le canon de l'usine hors d'`AGENTS.md` |
-
-Toute erreur dont tu identifies la cause et vérifies le fix : leçon dans `knowledge/lessons.yaml` (skill `td-auto-improve`). Le seed fait partie de l'usine, ses erreurs aussi.
+| Symptom | Cause | Fix |
+|---|---|---|
+| `check_env.py` still says NOT READY | the seed was not saved after the wizard | Cmd+S in TD (step 4a) |
+| The MCP client sees no Envoy tools | `.mcp.json` written after the client started | restart the client session |
+| `connected:false` while TD is running | the socket dropped | wait about 10 s: the bridge and the TD-side watchdog reconnect on their own |
+| The wizard never opened | Embody still initializing, or already configured | open the Embody COMP and run the wizard from its parameters |
 
 ---
 
-## Après
+## After
 
-- **Mise à jour d'Embody** : re-sauvegarde simplement `templates/seed.toe` après l'update.
-- **Régénérer la config MCP sans wizard** : `op.Embody.InitEnvoy()` dans le Textport.
-- **Changer un choix du wizard** : chaque écran correspond à un paramètre du COMP Embody (Mode, Configure For, Tool Permissions, AI Project Root, Envoy Enable...) — pas besoin de le repasser.
-- Une fois `SEED READY` : `/new-td-project <ta phrase>` dans une session Architecte, et le premier build peut partir.
+Every new project starts from this seed. You will only come back here to upgrade Embody, or to
+rebuild the seed on another machine.
