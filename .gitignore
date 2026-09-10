@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 *.[0-9].toe
+*.[0-9][0-9].toe
+projects/*/project.*.toe
 TDImportCache/
 
 # Embody / Envoy (auto-managed)
@@ -24,3 +26,16 @@ opencode.json
 .claude/settings.local.json
 .claude/projects/
 briefs/
+projects/brain-eeg-cloud/TDPyEnvManagerContext.yaml
+
+# --- Publication : ce qui ne part pas sur GitHub ---
+# Les .toe de projet sont regenerables depuis network/*.tdxn et le spec.
+projects/*/project.toe
+projects/*/project1/**/*.pyc
+# Modeles 3D tiers : chacun apporte les siens, on ne redistribue pas.
+projects/*/assets/*.ply
+projects/*/assets/*.glb
+projects/*/assets/*.obj
+projects/*/assets/*.fbx
+# Second projet de mise au point, hors vitrine.
+projects/nebula-morph/
