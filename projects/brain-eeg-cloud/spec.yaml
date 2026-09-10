@@ -1,60 +1,102 @@
 # TD Factory build contract
-# Exemple rempli, sert aussi de référence pour l'Architecte.
+# Written by the Architect, executed by the Builder, reviewed by a human in between.
 
 slug: brain-eeg-cloud
 title: Brain EEG Cloud
-created: 2026-09-08
+created: 2026-09-09
 td_build: "2025.33070"
 
+# ---------------------------------------------------------------------------
+# WHAT and WHY
+# ---------------------------------------------------------------------------
 intent: >
-  Un cerveau en nuage de points qui respire et se déforme selon un signal EEG.
-  Au repos la forme est lisible et stable, sous excitation elle se disperse et
-  se recolore vers le chaud. Destiné à une projection frontale unique, vue de
-  loin, tournant en continu pendant des heures.
+  A point-cloud brain that comes alive under an EEG signal. At rest it breathes
+  slowly, its shape readable and stable, its points fine and cold. Under arousal
+  the points spread apart, warm up and leave comet trails behind them, so that
+  every peak of the signal stays visible for a second after it passed. The brain
+  floats in the foreground over a deep navy field crossed by slow sky-blue aurora
+  veils, alive enough that the image is never frozen, dark and slow enough never
+  to compete with the brain for attention. Meant for a single frontal projection,
+  seen from a distance, running continuously for hours.
 
-references: []
+references:
+  - projects/nebula-morph (POPs, 80k points at 60 fps, feedback trails, bloom + tone map)
 
+# Asset provided by the human, measured before the spec was written.
+assets:
+  - path: assets/cloud_brain.ply
+    kind: point_cloud
+    format: ply binary_little_endian, Blender 5.2 LTS
+    points: 262254
+    fields: [x, y, z, id]
+    bounds_x: [-0.901, 0.884]
+    bounds_y: [-1.076, 1.350]
+    bounds_z: [-1.008, 0.881]
+    notes: >
+      No colour and no normals in the file. The id field is a pseudo-random signed
+      32-bit integer, unique per point, not an anatomical region label: it serves
+      only as a per-point seed (breathing phase offset, size and hue variation).
+      Exported from Blender, therefore Z-up: the orientation must be corrected in
+      src_cloud, never downstream.
+
+# ---------------------------------------------------------------------------
+# OUTPUT
+# ---------------------------------------------------------------------------
 output:
   mode: realtime
-  resolution: [1920, 1080]
+  resolution: [1280, 720]
   target_fps: 60
   fps_tolerance: 0.9
   final_op: /project1/out_final
+  notes: >
+    1280x720 is the effective ceiling of the Non-Commercial licence, as measured on
+    nebula-morph. The spec is written at that resolution so the measured fps is the
+    real fps, not a silently downgraded 1080p.
 
+# ---------------------------------------------------------------------------
+# INPUTS
+# ---------------------------------------------------------------------------
 inputs:
   - name: eeg
     kind: chop
     source: mock
-    channels: [alpha, beta]
+    channels: [alpha, beta, theta]
     range: [0.0, 1.0]
     mock: noise
-    notes: remplacer par le flux OSC du casque une fois le matériel disponible
+    notes: >
+      Three bands normalized to 0-1. alpha drives hue and breathing, beta drives
+      dispersion and bursts, theta drives the background's slow drift. The mock is
+      smoothed noise with varying energy. Swapping in an OSC In CHOP happens inside
+      ctrl_signal and nowhere else: the rest of the network only ever sees
+      out_ctrl_signal.
 
+# ---------------------------------------------------------------------------
+# ANCHORS
+# ---------------------------------------------------------------------------
 anchors:
   root: /project1
+  notes: >
+    Proposed root, not assumed. The Builder confirms the real structure with
+    query_network on / before creating anything, and corrects this field.
 
+# ---------------------------------------------------------------------------
+# BUDGET
+# ---------------------------------------------------------------------------
 budget:
-  max_ops_total: 40
+  max_ops_total: 85
   max_ops_root: 20
-  max_gpu_cook_ms: 8
+  max_gpu_cook_ms: 10
   max_stages: 6
 
+# ---------------------------------------------------------------------------
+# PIPELINE
+# ---------------------------------------------------------------------------
 pipeline:
-  - id: src_cloud
-    responsibility: charger le maillage du cerveau et le convertir en nuage de points GPU via POPs
-    consumes: []
-    produces: out_src_cloud
-    reuse: null
-    params:
-      - name: Density
-        style: Float
-        range: [0.0, 1.0]
-        default: 0.6
-        help: proportion de points conservés, baisser si le GPU sature
-    budget_ops: 10
-
   - id: ctrl_signal
-    responsibility: normaliser et lisser les bandes EEG en deux canaux 0 à 1 exploitables
+    responsibility: >
+      produce three normalized, smoothed EEG channels in 0-1 from the mock; the only
+      point where the signal enters the network and the only place clamping and
+      normalization happen
     consumes: []
     produces: out_ctrl_signal
     reuse: null
@@ -62,58 +104,214 @@ pipeline:
       - name: Smoothing
         style: Float
         range: [0.0, 0.99]
-        default: 0.9
-        help: lissage exponentiel, plus haut égale plus inerte
-    budget_ops: 6
-
-  - id: fx_displace
-    responsibility: déplacer les points selon un bruit modulé par le canal beta
-    consumes: [src_cloud, ctrl_signal]
-    produces: out_fx_displace
-    reuse: null
-    params:
-      - name: Displacement
+        default: 0.85
+        help: signal inertia, higher means the brain reacts more slowly and more gently
+      - name: Excitation
         style: Float
-        range: [0.0, 2.0]
+        range: [0.0, 1.0]
         default: 0.5
-        help: amplitude de dispersion des points
-    budget_ops: 8
+        help: simulated activity level, from complete rest to maximum agitation
+      - name: Source
+        style: Menu
+        range: [mock, osc]
+        default: mock
+        help: switch between the simulated signal and an EEG headset connected over OSC
+    budget_ops: 10
 
-  - id: render
-    responsibility: rendre le nuage avec teinte pilotée par alpha et composer la sortie finale
-    consumes: [fx_displace, ctrl_signal]
-    produces: out_final
+  - id: src_cloud
+    responsibility: >
+      load the brain point cloud from the ply file, stand it upright in Y-up, recenter
+      and scale it, decimate it according to Density, and expose a normalized per-point
+      seed derived from the id field
+    consumes: []
+    produces: out_src_cloud
     reuse: null
     params:
-      - name: Warmth
+      - name: Density
+        style: Float
+        range: [0.05, 1.0]
+        default: 0.5
+        help: proportion of points displayed, lower it if the image stutters
+    budget_ops: 10
+
+  - id: bg_aurora
+    responsibility: >
+      generate the animated background on its own: deep navy crossed by slow sky-blue
+      aurora veils, never brighter than the brain
+    consumes: []
+    produces: out_bg_aurora
+    reuse: null
+    params:
+      - name: Auroraspeed
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.15
+        help: drift speed of the background veils, zero freezes them completely
+      - name: Auroralevel
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.35
+        help: background brightness, raising it brings the field forward behind the brain
+    budget_ops: 10
+
+  - id: fx_pulse
+    responsibility: >
+      animate the point cloud from the signal: slow breathing phase-shifted by each
+      point's seed, dispersion and bursts driven by beta, per-point hue from cold blue
+      to warm driven by alpha
+    consumes: [ctrl_signal, src_cloud]
+    produces: out_fx_pulse
+    reuse: null
+    params:
+      - name: Breath
         style: Float
         range: [0.0, 1.0]
         default: 0.3
-        help: décalage de teinte du froid vers le chaud
+        help: breathing amplitude at rest, zero freezes the shape
+      - name: Dispersion
+        style: Float
+        range: [0.0, 2.0]
+        default: 0.6
+        help: how far points scatter on signal peaks, high values dissolve the shape
+      - name: Warmth
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.4
+        help: hue shift from cold blue toward warm as activity rises
     budget_ops: 12
 
+  - id: render
+    responsibility: >
+      render the cloud as additive luminous sprites on a slowly orbiting camera, with
+      a depth falloff, over a transparent background for compositing
+    consumes: [src_cloud, fx_pulse]
+    produces: out_render
+    reuse: null
+    params:
+      - name: Pointsize
+        style: Float
+        range: [0.5, 6.0]
+        default: 2.0
+        help: on-screen point size, large reads as a mass, fine reads as dust
+      - name: Orbitspeed
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.12
+        help: camera rotation speed around the brain, zero holds it still
+      - name: Depthfade
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.5
+        help: attenuation of the points at the back, this is what gives the volume its thickness
+    budget_ops: 14
+
+  - id: composite
+    responsibility: >
+      accumulate the render's trails, add them over the background, apply the glow and
+      the tone map, and terminate on the final output
+    consumes: [bg_aurora, render]
+    produces: out_final
+    reuse: feedback_trails
+    params:
+      - name: Persistence
+        style: Float
+        range: [0.0, 0.95]
+        default: 0.8
+        help: length of the trails behind the points, high stretches the comet
+      - name: Glow
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.45
+        help: halo around the most intense points
+    budget_ops: 14
+
+# ---------------------------------------------------------------------------
+# ACCEPTANCE
+# ---------------------------------------------------------------------------
 acceptance:
   - id: renders
-    check: capture /project1/out_final returns quality pass
+    check: capture /project1/out_final returns quality pass, not is_black and not is_flat
   - id: no_errors
-    check: get_op_errors on /project1 recursive returns empty
+    check: get_op_errors on /project1 recursive returns empty for the six stages
   - id: perf
-    check: fps >= 54 with the mock eeg input active
+    check: fps >= 54 measured over 30 seconds with the mock eeg input active at 1280x720
+  - id: gpu_budget
+    check: get_project_performance reports frame time <= 16 ms with all stages cooking
   - id: params_respond
-    check: Density Displacement Warmth Smoothing swept min mid max, no error and no black frame
-  - id: shape_readable
-    check: at Displacement 0 the capture is not flat and not black, at Displacement 2 the capture differs from the one at 0
+    check: the 14 custom parameters swept min mid max, each capture non black and get_op_errors empty
+  - id: cloud_loaded
+    check: get_pop_data on /project1/out_src_cloud at Density 1.0 reports 262254 points with a P attribute and a per point seed attribute
+  - id: upright
+    check: capture /project1/out_render at Orbitspeed 0 and Dispersion 0 has a non black pixel bounding box taller than wide
+  - id: signal_drives_image
+    check: captures of /project1/out_final with Excitation 0 and Excitation 1 differ by more than 3 percent mean absolute RGB
+  - id: trails_persist
+    check: captures of /project1/out_final at Persistence 0 and 0.9 differ by more than 2 percent mean absolute RGB, and Persistence 0.95 stays not is_flat
+  - id: background_animated
+    check: two captures of /project1/out_bg_aurora 3 seconds apart differ by more than 1 percent mean absolute RGB at default Auroraspeed
+  - id: background_recedes
+    check: mean luminance of /project1/out_bg_aurora is below mean luminance of the non black pixels of /project1/out_render
+  - id: no_white_clip
+    check: capture /project1/out_final at Excitation 1 and Glow 1 reports max_lum below 1.0
+  - id: osc_ready
+    check: setting ctrl_signal Source to osc with no device connected leaves get_op_errors empty and out_ctrl_signal cooking three channels in 0 to 1
   - id: stability
     check: fps after 10 minutes of continuous run is within 5 percent of the initial measurement
 
+# ---------------------------------------------------------------------------
+# RISKS
+# ---------------------------------------------------------------------------
 risks:
-  - risk: le nombre de points du maillage peut dépasser le budget GPU
-    fallback: Density expose la décimation, défaut à 0.6 et non 1.0
-  - risk: le signal EEG réel sera bruité et hors bornes contrairement au mock
-    fallback: clamp et normalisation dans ctrl_signal, jamais en aval
+  - risk: >
+      262254 points rendered as additive sprites with feedback and bloom may exceed the
+      GPU budget and drop fps below the floor
+    fallback: >
+      Density exposes the decimation and defaults to 0.5, decimation happens at load time
+      rather than at render time; if fps stays under 54, lower Density then Pointsize
+      before touching anything else, and record it in build-report
+  - risk: >
+      the ply comes from Blender in Z-up, so the brain may appear lying down or facing
+      away and nobody notices on a capture of an abstract cloud
+    fallback: >
+      fixed correction in src_cloud, checked by the upright criterion before anything
+      downstream is built
+  - risk: >
+      the id field is a signed 32-bit integer; using it raw as a value produces absurd
+      amplitudes or NaN
+    fallback: >
+      normalize to 0-1 at load time, check the bounds with get_pop_data before wiring it
+      into fx_pulse
+  - risk: >
+      high Persistence plus additive plus bloom saturates the image to white and the
+      brain's shape disappears
+    fallback: >
+      Persistence caps at 0.95, tone map at the end of the chain, no_white_clip criterion
+      checked at maximum Excitation and Glow
+  - risk: >
+      rewiring the feedback loop directly causes a cook dependency loop
+    fallback: >
+      use the Feedback TOP's Target TOP parameter and the feedback_trails component from
+      lib, per the feedback-top-target-loop lesson
+  - risk: >
+      the real EEG signal will be noisy, out of bounds and sometimes absent, unlike the
+      smoothed mock
+    fallback: >
+      clamp and normalize inside ctrl_signal only, fall back to a resting value when the
+      OSC stream is silent, the rest of the network only ever sees 0-1
+  - risk: >
+      the animated background may steal attention or cause visual fatigue over a run of
+      several hours
+    fallback: >
+      Auroraspeed at 0.15 and Auroralevel at 0.35 by default, background_recedes criterion
+      comparing luminances
 
+# ---------------------------------------------------------------------------
+# DELIVERABLES
+# ---------------------------------------------------------------------------
 deliverables:
   - project.toe
   - network/brain-eeg-cloud.tdxn
+  - glsl/fx_pulse_compute.glsl
   - captures/final.png
+  - captures/20260909-HHMMSS-upright.png
   - build-report.md
