@@ -10,7 +10,13 @@ behind it.
 - **Architect** writes `projects/<slug>/spec.yaml`. Never touches TouchDesigner, never calls MCP tools. Follow `.claude/skills/td-architect/SKILL.md`.
 - **Builder** executes an approved `spec.yaml` against a live TD session through Envoy MCP. Follow `.claude/skills/td-builder/SKILL.md`.
 
-Never do both roles in one session. If a session starts building without an approved spec, stop and say so.
+The two roles may run in the SAME session. What must never be skipped is the gate between
+them: `python scripts/validate_spec.py <slug>` exits 0, AND a human approves the spec in
+writing. Silence is not approval, and an agent never approves its own spec. When both roles
+share a session, say out loud which role you are entering and re-read the spec from disk
+before building -- the file is the contract, not your memory of writing it.
+
+If a session starts building without a validated and approved spec, stop and say so.
 
 The `.claude/` files are plain markdown. Whatever your harness, read them as documents:
 `.claude/rules/00-studio-conventions.md` (always in force) and the skills `td-architect`,
