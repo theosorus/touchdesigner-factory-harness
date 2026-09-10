@@ -1,27 +1,277 @@
-# Mémoire d'erreurs de TD Factory, partagée entre tous les agents et tous les harnesses.
-# Une entrée entre ici seulement quand la cause racine est identifiée et le fix vérifié.
-# Protocole complet : .claude/skills/td-auto-improve/SKILL.md
+# TD Factory's error memory, shared across every agent and every harness.
+# An entry lands here only when the root cause is identified and the fix is verified.
+# Full protocol: .claude/skills/td-auto-improve/SKILL.md
 #
-# Lire : grep sur les tags avant un build, grep sur le message d'erreur exact en cas d'erreur.
-# Écrire : dédup d'abord, mettre à jour une entrée existante plutôt que dupliquer.
-# Ce fichier n'appartient à aucun agent en particulier : tout agent le lit et l'écrit.
+# Read: grep the tags before a build, grep the exact error message when one hits.
+# Write: dedupe first, update an existing entry rather than duplicating it.
+# This file belongs to no agent in particular: every agent reads and writes it.
 
-lessons: []
+lessons:
+  - id: base-comp-data-proxies
+    date: 2026-09-09
+    hits: 1
+    context: nebula-morph, POP/CHOP stages
+    symptom: >
+      Source /project1/src_particles/SrcSeed has no COMP connectors (not a COMP)
+      when connect_ops is called with comp=true.
+    cause: >
+      comp=true targets the top/bottom COMP connectors, not regular data flow
+      across a base COMP boundary.
+    fix: >
+      Create an inPOP/inCHOP or outPOP/outCHOP proxy inside the base COMP and
+      use regular connectors. Verified: out_src_particles carries 80000 points
+      with P and Seed, and stage errors are empty.
+    prevention: expose base COMP data with family-specific in/out proxy operators.
+    tags: [comp, connectors, pop, chop, envoy]
+    source: opencode
 
-# Exemple de forme attendue:
+  - id: feedback-top-target-loop
+    date: 2026-09-09
+    hits: 1
+    context: nebula-morph, fx_trails stage
+    symptom: >
+      /project1/fx_trails/TrailDecay:Warning: Cook dependency loop detected.
+    cause: >
+      A direct wire from the downstream composite back into Feedback TOP creates
+      a regular cook cycle; Feedback TOP expects its downstream target in the
+      Target TOP parameter.
+    fix: >
+      Feed the current image into Feedback TOP, set TrailFeedback.top to TrailMix,
+      and remove the direct TrailMix-to-Feedback wire. Verified: zero warnings
+      after reset/cook and Persistence captures pass.
+    prevention: use the Feedback TOP Target TOP reference for frame feedback.
+    tags: [feedback, top, loop, trails]
+    source: opencode
+
+  - id: execute-python-blocks-td
+    date: 2026-09-09
+    hits: 1
+    context: nebula-morph, baseline measurement
+    symptom: >
+      FPS fell to 25.0 and then 18.0 after execute_python used time.sleep(2).
+    cause: >
+      execute_python runs on TouchDesigner's main thread; sleeping there blocks
+      the cook loop and corrupts the performance measurement.
+    fix: >
+      Put waits in the host process between MCP calls. Verified: idle baseline
+      returned to stable 60 fps.
+    prevention: never sleep or perform blocking waits inside execute_python.
+    tags: [td-python, performance, threading, fps]
+    source: opencode
+
+  - id: td-expression-floor
+    date: 2026-09-09
+    hits: 2
+    context: nebula-morph ctrl_evolution, then brain-eeg-cloud camera
+    symptom: >
+      Error in a parameter expression; NameError: name 'floor' is not defined.
+      Same family: 'sin' and 'cos' are not defined either.
+    cause: >
+      TouchDesigner parameter expressions do not expose the math module's
+      functions as bare names.
+    fix: >
+      Use math.floor, math.sin, math.cos explicitly in TD parameter expressions.
+      Verified on both projects: channels and camera translation cook with no errors.
+    prevention: in a TD parameter expression, always qualify math functions with math.
+    tags: [chop, expressions, python, ctrl]
+    source: opencode
+
+  - id: annotation-internal-path-warning
+    date: 2026-09-09
+    hits: 3
+    context: brain-eeg-cloud, stage annotations
+    symptom: >
+      /project1/<comp>/annotate1/annotation/back:Warning: Invalid path for node
+      "/project1/<comp>/annotate/annotation" referenced by parameter "Component".
+      The warning comes back mirrored after a TDXN reimport of the annotation.
+    cause: >
+      TDAnnotate's internal widgets reference their host by a frozen path, while
+      create_annotation and TDXN reconstruction can each pick a different operator
+      name. The name and the reference drift apart, in either direction.
+    fix: >
+      Read the path quoted in the warning and rename the annotation to exactly that
+      name. Verified twice: recursive get_op_errors returns to zero warnings.
+    prevention: >
+      After create_annotation AND after any TDXN reimport, check get_op_errors and
+      align the annotation's name on the path the warning demands. The networkbox
+      mode does not have this flaw; prefer it when several annotations share a parent.
+    tags: [annotation, warning, envoy, layout]
+    source: claude-code
+
+  - id: level-top-contrast-default-one
+    date: 2026-09-09
+    hits: 1
+    context: brain-eeg-cloud, bg_aurora stage
+    symptom: >
+      A Level TOP outputs a perfectly uniform image (grey 0.5, std 0.0) while its
+      input varies normally and no bypass is set.
+    cause: >
+      The Level TOP's contrast parameter defaults to 1.0, not 0.0. Setting it to 0
+      removes every deviation from the mean and flattens the image.
+    fix: >
+      Restore contrast to 1.0 and stretch the range with inlow/inhigh instead.
+      Verified: capture no longer flat, std 0.026 on the background.
+    prevention: >
+      Compare p.eval() to p.default before writing a supposedly neutral value. On the
+      Level TOP, neutral is 1.0 for contrast, brightness1, gamma1 and opacity.
+    tags: [top, level, parameters, capture]
+    source: claude-code
+
+  - id: tdxn-export-including-embody-freezes-td
+    date: 2026-09-09
+    hits: 1
+    context: brain-eeg-cloud, network export after the build
+    symptom: >
+      export_network on /project1 with include_dat_content writes a 6.6 MB file, then
+      TouchDesigner stops responding: every Envoy tool times out at 30 s, no new log
+      lines, process alive at 50-110% CPU, no crash dump. Cost 15 minutes and needed
+      a kill -9.
+    cause: >
+      /project1 contains the Embody COMP. The export walks its whole interior
+      (EmbodyExt, EnvoyExt, TDXNExt, tagger, wizard, viz) with DAT content, producing
+      a huge document and blocking the main thread.
+    fix: >
+      Mark Embody invisible to TDXN before any root export:
+      op.Embody.tags.add('tdxn_exclude'). Verified: the same export returns 13
+      operators, 25 KB, instantly, with no freeze.
+    prevention: >
+      Always tag Embody tdxn_exclude before an export_network of the root, and save the
+      project BEFORE any large export.
+    tags: [tdxn, export, embody, freeze, perf]
+    source: claude-code
+
+  - id: pointsprite-sizing-model-traps
+    date: 2026-09-09
+    hits: 1
+    context: brain-eeg-cloud, render stage
+    symptom: >
+      131k sprites drop fps to 4 (263 ms per frame) in perspective mode; then in
+      constatten mode the pointsize parameter has no measurable effect at all.
+    cause: >
+      On the Point Sprite MAT, sizingmodel=perspective expresses pointsize in WORLD
+      units: 2.0 on a 2-unit-tall brain makes every sprite cover the whole subject
+      (massive overdraw). In sizingmodel=constatten the size comes from
+      attensizenear/attensizefar interpolated between attennear and attenfar, and
+      pointsize is ignored.
+    fix: >
+      constatten, with attennear/attenfar framed on the scene's real depth and
+      attensizenear/attensizefar driven by expression from the exposed size parameter.
+      Verified: 60 fps, and size responds from 0.5 to 6.
+    prevention: >
+      On a Point Sprite MAT, choose the sizing model BEFORE wiring size, and verify that
+      sweeping the parameter actually changes the image.
+    tags: [mat, pointsprite, perf, render, parameters]
+    source: claude-code
+
+  - id: force-cook-does-not-propagate-upstream
+    date: 2026-09-09
+    hits: 1
+    context: brain-eeg-cloud, parameter sweeps
+    symptom: >
+      A min/mid/max sweep reads exactly the same image statistics for three very
+      different values: the parameter looks dead while it actually works.
+    cause: >
+      cook(force=True) on the terminal TOP alone does not force the upstream operators.
+      A parameter change on a MAT or a render COMP does not necessarily dirty the chain
+      within the same pass, and the read returns the previous texture. The feedback loop
+      never advances under a forced cook either.
+    fix: >
+      Force-cook the whole chain in dependency order before every read, and set
+      Persistence to 0 during diff measurements to remove feedback accumulation.
+      Verified: Pointsize moves from 0.87 to 0.98 max luminance, and the Excitation
+      difference goes from 1.7 to 4.1 percent.
+    prevention: >
+      To measure a parameter's effect, cook the whole chain in order then read, or let
+      real frames pass between two MCP calls.
+    tags: [cook, measurement, capture, verification]
+    source: claude-code
+
+  - id: additive-sprites-alpha-punches-black-halo
+    date: 2026-09-09
+    hits: 1
+    context: brain-eeg-cloud, compositing the render over the background
+    symptom: >
+      Compositing the point cloud over the background with a Composite TOP in over mode
+      leaves an opaque black silhouette around the subject: the background disappears
+      wherever the render is dark but dense.
+    cause: >
+      Two distinct sources of opaque-but-colourless alpha. 1) Sprites wrote alpha=1
+      regardless of brightness, and alpha accumulates like colour under additive
+      blending. 2) The trails loop keeps an opaque alpha while its colour has decayed to
+      zero. Camera fog makes it worse: it darkens distant points' RGB without touching
+      their alpha.
+    fix: >
+      Write alpha = the strongest channel of the emitted colour (premultiplied),
+      composite the subject over the background BEFORE adding the trails as light, and
+      replace fog with sprite size attenuation over distance. Verified: halo gone,
+      background visible through the faint edges, zero errors.
+    prevention: >
+      Under additive blending destined for an over composite, a point's alpha must follow
+      its brightness, and anything that decays in colour (feedback, trails) is added as
+      light rather than participating in occlusion.
+    tags: [top, composite, alpha, pointsprite, feedback, render]
+    source: claude-code
+
+  - id: sprinkle-pop-perprim-needs-more-points-than-prims
+    date: 2026-09-09
+    hits: 1
+    context: brain-eeg-cloud, moving from a solid cloud to a surface mesh
+    symptom: >
+      A Sprinkle POP in Per Primitive mode on a 377701-triangle mesh with Number of
+      Points at 227000 covers only part of the geometry: the render shows a broken-up
+      object, and raising it to 420000 does not fix it.
+    cause: >
+      The perprim method keeps an approximately constant distribution PER PRIMITIVE.
+      Below one point per primitive it cannot cover every primitive, and Number of Points
+      is documented as an approximate upper bound anyway.
+    fix: >
+      When the mesh has more primitives than the wanted point count, do not scatter: read
+      the mesh vertices directly with a Point File In POP (it ignores faces and keeps
+      nx ny nz), then decimate downstream with a random seed. Verified: 215601 surface
+      points with P and N, complete brain, 60 fps.
+    prevention: >
+      Before choosing Sprinkle POP, compare the mesh's primitive count to the target point
+      count; above it, sample another way.
+    tags: [pop, sprinkle, geometry, mesh]
+    source: claude-code
+
+  - id: filein-pop-color-collides-with-glsl-output
+    date: 2026-09-09
+    hits: 1
+    context: brain-eeg-cloud, loading the surface mesh
+    symptom: >
+      GLSL POP compilation fails with "AttData4 : nameless block contains a member that
+      already has a name at global scope", appearing after changing only the point
+      cloud's source file.
+    cause: >
+      The ply file carried vertex colours. The File In POP always reads red/green/blue as
+      an incoming Color attribute, and the shader declares Color as an output: the same
+      name exists twice at the generated program's global scope. The File In POP's
+      loadcolor parameter is not enough to remove it.
+    fix: >
+      Do not write colours into the file when the downstream produces its own
+      (--no-color option of the converter). Verified: attributes P, Seed, N only, shader
+      compiles, zero errors.
+    prevention: >
+      An input attribute sharing a name with a GLSL POP output breaks compilation; strip
+      the attribute at the source rather than trying to disable it at load time.
+    tags: [pop, glsl, attributes, ply, compilation]
+    source: claude-code
+
+# Expected shape:
 #
 # - id: pop-attribute-copy-cook
 #   date: 2026-09-08
 #   hits: 1
-#   context: brain-eeg-cloud, étage fx_displace
+#   context: brain-eeg-cloud, fx_displace stage
 #   symptom: >
 #     POP Attribute Copy error: attribute "Cd" not found in second input
 #   cause: >
-#     Le second input attend un POP avec l'attribut déjà déclaré ; un POP vide
-#     n'expose pas l'attribut et le cook échoue.
+#     The second input expects a POP that already declares the attribute; an empty
+#     POP does not expose it and the cook fails.
 #   fix: >
-#     Déclarer l'attribut avec un POP Attribute Add avant de le consommer.
-#     Vérifié : get_op_errors vide + capture pass.
-#   prevention: toujours déclarer un attribut avant de le consommer
+#     Declare the attribute with a POP Attribute Add before consuming it.
+#     Verified: get_op_errors empty + capture pass.
+#   prevention: always declare an attribute before consuming it
 #   tags: [pop, attribute, cook]
 #   source: claude-code
