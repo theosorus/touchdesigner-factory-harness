@@ -258,6 +258,30 @@ lessons:
     tags: [pop, glsl, attributes, ply, compilation]
     source: claude-code
 
+  - id: large-glsl-dat-write-over-mcp-crashes-td
+    date: 2026-09-10
+    hits: 2
+    context: brain-eeg-cloud, editing the fx_pulse compute shader
+    symptom: >
+      set_dat_content on a GLSL POP's compute DAT returns "TouchDesigner has crashed.
+      Use the launch_td tool to restart it." TouchDesigner exits with no crash dump.
+      Happened twice on the same operation, both times on a full rewrite of a ~130 line
+      shader shortly after a project save.
+    cause: >
+      NOT ESTABLISHED. The reproducible trigger is a large DAT write pushed through MCP
+      into a shader that recompiles on write, close to a save or an extension reinit.
+      Recorded because the trigger is reproducible and the safe path is verified, not
+      because the root cause is understood.
+    fix: >
+      Once the DAT is externalized, edit the .glsl FILE on disk instead: it is
+      file-synced, so TouchDesigner reloads it by itself. Verified: the same full rewrite
+      applied cleanly through the file, shader compiled, zero errors, no crash.
+    prevention: >
+      Prefer editing externalized shader and script files on disk over writing their DAT
+      through MCP, and save the project before any large DAT rewrite.
+    tags: [glsl, dat, crash, envoy, externalization]
+    source: claude-code
+
 # Expected shape:
 #
 # - id: pop-attribute-copy-cook
