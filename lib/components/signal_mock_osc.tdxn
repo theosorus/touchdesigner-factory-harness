@@ -1,0 +1,154 @@
+format: tdxn
+version: '2.1'
+generator: Embody/6.2.42
+td_build: 099.2025.33070
+source_file: project.3.toe
+exported_at: '2026-09-09T18:47:58Z'
+network_path: /project1/ctrl_signal
+options:
+  include_dat_content: true
+  include_storage: true
+type_defaults:
+  mathCHOP:
+    parameters:
+      autoexportroot: =parent()
+    size: [130, 90]
+    color: [0.67, 0.67, 0.67]
+type: baseCOMP
+custom_pars:
+  Custom:
+  - name: Smoothing
+    style: Float
+    startSection: true
+    default: 0.85
+    max: 0.99
+    clampMin: true
+    clampMax: true
+    normMax: 0.99
+    help: 'Inertie du signal : plus haut, plus le cerveau reagit lentement et en douceur.'
+  - name: Excitation
+    style: Float
+    default: 0.5
+    clampMin: true
+    clampMax: true
+    help: 'Niveau d''activite simule : 0 = repos total et forme figee, 1 = agitation maximale.'
+  - name: Source
+    style: Menu
+    default: mock
+    menuNames:
+    - mock
+    - osc
+    menuLabels:
+    - Mock (bruit simule)
+    - OSC (casque EEG)
+    help: 'Origine du signal : le bruit simule, ou le casque EEG branche en OSC.'
+color: [0.67, 0.67, 0.67]
+operators:
+- name: out1
+  type: outCHOP
+  parameters:
+    label: =me.name
+    autoexportroot: =parent()
+  position: [1400, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - limit_clamp
+- name: const_osc
+  type: constantCHOP
+  parameters:
+    rate: =me.time.rate
+    autoexportroot: =parent()
+  sequences:
+    const:
+    - name: alpha
+    - name: beta
+    - name: theta
+  position: [400, -400]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+- name: math_norm
+  type: mathCHOP
+  parameters:
+    fromrange1: -1
+  position: [200, 0]
+  inputs:
+  - noise_eeg
+- name: noise_eeg
+  type: noiseCHOP
+  parameters:
+    period: 6
+    tz: =absTime.seconds * 0.15
+    channelname: alpha beta theta
+    end: 0
+    rate: =me.time.rate
+    autoexportroot: =parent()
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+- name: oscin_eeg
+  type: oscinCHOP
+  parameters:
+    active: =parent().par.Source.menuIndex == 1
+    autoexportroot: =parent()
+  position: [400, -600]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+- name: lag_smooth
+  type: lagCHOP
+  parameters:
+    lag1: =parent().par.Smoothing.eval() * 2
+    lag2: =parent().par.Smoothing.eval() * 2
+    autoexportroot: =parent()
+  position: [400, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - math_norm
+- name: limit_clamp
+  type: limitCHOP
+  parameters:
+    type: clamp
+    min: 0
+    autoexportroot: =parent()
+  position: [1200, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - switch_source
+- name: math_excite
+  type: mathCHOP
+  parameters:
+    gain: =parent().par.Excitation.eval() * 0.55
+    postoff: =parent().par.Excitation.eval() * 0.45
+  position: [600, 0]
+  inputs:
+  - lag_smooth
+- name: replace_osc
+  type: replaceCHOP
+  parameters:
+    autoexportroot: =parent()
+  position: [800, -400]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - const_osc
+  - oscin_eeg
+- name: switch_source
+  type: switchCHOP
+  parameters:
+    index: =parent().par.Source.menuIndex
+    autoexportroot: =parent()
+  position: [1000, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - math_excite
+  - replace_osc
+annotations:
+- name: annotate
+  mode: annotate
+  title: Signal EEG normalise
+  text: Seul point d'entree du signal. Le bruit simule (alpha, beta, theta) est ramene en 0-1, lisse par Smoothing, mis a l'echelle par Excitation, puis clampe. La branche OSC ouvre son socket seulement quand Source passe a osc ; le constant garantit 3 canaux meme sans casque.
+  position: [-70, -670]
+  size: [1670, 930]
+  color: [0.45, 0.45, 0.45]

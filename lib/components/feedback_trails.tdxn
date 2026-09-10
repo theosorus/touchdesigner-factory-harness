@@ -1,0 +1,67 @@
+format: tdxn
+version: '2.1'
+generator: Embody/6.2.42
+td_build: 099.2025.33070
+source_file: project.1.toe
+exported_at: '2026-09-09T17:07:07Z'
+network_path: /project1/fx_trails
+options:
+  include_dat_content: true
+  include_storage: true
+type: baseCOMP
+custom_pars:
+  Custom:
+  - name: Persistence
+    style: Float
+    default: 0.88
+    max: 0.98
+    clampMin: true
+    clampMax: true
+    normMax: 0.98
+    help: Longueur des trainees lumineuses, haut egale trainees longues.
+color: [0.67, 0.67, 0.67]
+operators:
+- name: InRender
+  type: inTOP
+  parameters:
+    label: =me.name
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+- name: OutStage
+  type: outTOP
+  parameters:
+    label: =me.name
+  position: [1600, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - TrailDecay
+- name: TrailMix
+  type: compositeTOP
+  parameters:
+    operand: screen
+    size: input1
+  position: [400, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - InRender
+  - TrailDecay
+- name: TrailDecay
+  type: levelTOP
+  parameters:
+    brightness1: =op('..').par.Persistence.eval()
+  position: [1200, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - TrailFeedback
+- name: TrailFeedback
+  type: feedbackTOP
+  parameters:
+    top: TrailMix
+  position: [800, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - InRender

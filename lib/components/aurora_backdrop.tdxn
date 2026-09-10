@@ -1,0 +1,209 @@
+format: tdxn
+version: '2.1'
+generator: Embody/6.2.42
+td_build: 099.2025.33070
+source_file: project.3.toe
+exported_at: '2026-09-09T19:05:28Z'
+network_path: /project1/bg_aurora
+options:
+  include_dat_content: true
+  include_storage: true
+type_defaults:
+  compositeTOP:
+    size: [130, 90]
+    color: [0.67, 0.67, 0.67]
+  noiseTOP:
+    parameters:
+      outputresolution: custom
+      resolutionh: 720
+      resolutionw: 1280
+      type: simplex4d
+    size: [130, 90]
+    color: [0.67, 0.67, 0.67]
+  rampTOP:
+    size: [130, 90]
+    color: [0.67, 0.67, 0.67]
+  tableDAT:
+    flags:
+    - -showDocked
+    - viewer
+    size: [130, 90]
+    color: [0.67, 0.67, 0.67]
+type: baseCOMP
+custom_pars:
+  Custom:
+  - name: Auroraspeed
+    style: Float
+    startSection: true
+    default: 0.15
+    clampMin: true
+    clampMax: true
+    help: Vitesse de derive des voiles du fond. 0 les fige completement.
+  - name: Auroralevel
+    style: Float
+    default: 0.32
+    clampMin: true
+    clampMax: true
+    help: Luminosite du fond. Monter le fait remonter derriere le cerveau et reduit le contraste.
+color: [0.67, 0.67, 0.67]
+operators:
+- name: out1
+  type: outTOP
+  parameters:
+    label: =me.name
+  position: [1800, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - comp_falloff
+- name: comp_veils
+  type: compositeTOP
+  parameters:
+    operand: add
+  position: [400, 0]
+  inputs:
+  - noise_veil
+  - noise_detail
+- name: noise_veil
+  type: noiseTOP
+  parameters:
+    period: 4.5
+    harmon: 3
+    sx: 0.45
+    sy: 1.15
+    t4d: =absTime.seconds * parent().par.Auroraspeed.eval() * 0.22
+- name: level_shape
+  type: levelTOP
+  parameters:
+    brightness1: =0.55 + parent().par.Auroralevel.eval() * 1.3
+    inlow: 0.34
+    inhigh: 0.72
+  position: [600, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - comp_veils
+- name: comp_falloff
+  type: compositeTOP
+  position: [1400, 0]
+  inputs:
+  - lookup_palette
+  - ramp_center_falloff
+- name: noise_detail
+  type: noiseTOP
+  parameters:
+    period: 1.1
+    amp: 0.12
+    offset: 0
+    sx: 0.8
+    sy: 0.8
+    t4d: =absTime.seconds * parent().par.Auroraspeed.eval() * 0.30 + 17.0
+  position: [0, -400]
+- name: ramp_palette
+  type: rampTOP
+  parameters:
+    dat: ramp_palette_keys
+    color1: 0.5199999809
+    color2: 0.7599999905
+    color3: 0.9499999881
+  position: [600, -400]
+- name: lookup_palette
+  type: lookupTOP
+  parameters:
+    channel: luminance
+  position: [1000, 0]
+  size: [130, 90]
+  color: [0.67, 0.67, 0.67]
+  inputs:
+  - level_shape
+  - ramp_palette
+- name: ramp_palette_keys
+  type: tableDAT
+  position: [600, -520]
+  dock: ramp_palette
+  dat_content:
+  - - pos
+    - r
+    - g
+    - b
+    - a
+  - - '0'
+    - '0.006'
+    - '0.016'
+    - '0.045'
+    - '1'
+  - - '0.45'
+    - '0.020'
+    - '0.050'
+    - '0.100'
+    - '1'
+  - - '0.75'
+    - '0.045'
+    - '0.115'
+    - '0.205'
+    - '1'
+  - - '0.92'
+    - '0.100'
+    - '0.210'
+    - '0.330'
+    - '1'
+  - - '1'
+    - '0.170'
+    - '0.320'
+    - '0.470'
+    - '1'
+  dat_content_format: table
+- name: ramp_center_falloff
+  type: rampTOP
+  parameters:
+    dat: ramp_center_falloff_keys
+    type: circular
+    extendright: hold
+    outputresolution: custom
+    resolutionw: 1280
+    resolutionh: 720
+  position: [1000, -400]
+- name: ramp_center_falloff_keys
+  type: tableDAT
+  position: [1000, -520]
+  dock: ramp_center_falloff
+  dat_content:
+  - - pos
+    - r
+    - g
+    - b
+    - a
+  - - '0'
+    - '0.12'
+    - '0.12'
+    - '0.12'
+    - '1'
+  - - '0.30'
+    - '0.18'
+    - '0.18'
+    - '0.18'
+    - '1'
+  - - '0.55'
+    - '0.42'
+    - '0.42'
+    - '0.42'
+    - '1'
+  - - '0.80'
+    - '0.80'
+    - '0.80'
+    - '0.80'
+    - '1'
+  - - '1'
+    - '1.0'
+    - '1.0'
+    - '1.0'
+    - '1'
+  dat_content_format: table
+annotations:
+- name: annotate
+  mode: annotate
+  title: Fond aurore
+  text: Deux couches de bruit simplex 4D qui evoluent sur place (jamais de defilement), sommees puis etalees sur toute leur dynamique, et mappees dans la palette bleu nuit vers bleu ciel. Auroraspeed pilote la derive, Auroralevel la luminosite. Le fond reste toujours plus sombre que le cerveau.
+  position: [-70, -590]
+  size: [1670, 850]
+  color: [0.45, 0.45, 0.45]

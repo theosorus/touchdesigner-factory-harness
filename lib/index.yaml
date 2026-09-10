@@ -1,22 +1,55 @@
-# Registre des composants réutilisables.
-# Un composant entre ici seulement quand il a été livré dans un projet,
-# qu'il est générique, et qu'il est paramétré (pas de valeur en dur).
+# Registry of reusable components.
+# A component lands here only once it has shipped in a project, is generic,
+# and is parameterized (no hardcoded values).
 #
-# Le Builder lit ce fichier avant de créer quoi que ce soit.
+# The Builder reads this file before creating anything.
 
 version: 1
-components: []
-
-# Exemple de forme attendue:
-#
-# - id: feedback_trails
-#   file: components/feedback_trails.tdxn
-#   family: TOP
-#   summary: boucle de feedback avec décroissance, rotation et zoom paramétrables
-#   params: [Decay, Rotate, Zoom, Blur]
-#   inputs: 1
-#   outputs: 1
-#   cost_gpu_ms: 1.2
-#   tested_on: "2025.33070"
-#   born_in: projects/kandinsky-wall
-#   caveats: gain au dessus de 0.97 diverge en quelques secondes
+components:
+- id: feedback_trails
+  file: components/feedback_trails.tdxn
+  family: TOP
+  summary: Feedback TOP loop with a parameterized decay and a history-only output
+  params: [Persistence]
+  inputs: 1
+  outputs: 1
+  cost_gpu_ms: 0.3
+  tested_on: '2025.33070'
+  born_in: projects/nebula-morph
+  caveats: >
+    Needs the Target TOP reference rather than a wire back, otherwise a cook dependency
+    loop. Output resolution follows the current TOP input. Its alpha stays opaque while
+    its colour decays, so add it as light on top of a composite, never as an occluder.
+- id: signal_mock_osc
+  file: components/signal_mock_osc.tdxn
+  family: CHOP
+  summary: >
+    Normalized 0-1 signal source, simulated noise or live OSC, switchable without
+    rewiring anything downstream
+  params: [Smoothing, Excitation, Source]
+  inputs: 0
+  outputs: 1
+  cost_gpu_ms: 0.0
+  tested_on: '2025.33070'
+  born_in: projects/brain-eeg-cloud
+  caveats: >
+    The OSC socket only opens when Source is set to osc. Channels are named alpha, beta and
+    theta and must be renamed for another domain. Clamping and normalization happen here and
+    nowhere else.
+- id: aurora_backdrop
+  file: components/aurora_backdrop.tdxn
+  family: TOP
+  summary: >
+    Animated deep-navy to sky-blue backdrop: two layers of 4D simplex noise evolving in
+    place, mapped through an editable palette
+  params: [Auroraspeed, Auroralevel]
+  inputs: 0
+  outputs: 1
+  cost_gpu_ms: 0.4
+  tested_on: '2025.33070'
+  born_in: projects/brain-eeg-cloud
+  caveats: >
+    The palette lives in the ramp_palette_keys DAT. The Level TOP's inlow/inhigh are
+    calibrated on the noise field's real range and must be rechecked if period or harmonics
+    change; set outhigh to bound the peak, otherwise the whole frame brightens whenever the
+    noise mean drifts. Output is a fixed 1280x720.
