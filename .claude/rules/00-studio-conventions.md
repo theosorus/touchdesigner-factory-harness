@@ -1,52 +1,109 @@
-# Conventions studio TD Factory
+# TD Factory studio conventions
 
-Chargées dans chaque session. Elles rendent deux projets produits à trois mois d'écart lisibles de la même façon. Un build qui les viole n'est pas fini.
+Loaded in every session. They are what makes two projects built three months apart read the
+same way. A build that violates them is not finished.
 
-## Étages et nommage
+## Stages and naming
 
-- Un étage du `pipeline` du spec = un `base` COMP au root, nommé exactement comme l'id de l'étage : `src_cloud`, `fx_displace`, `render`.
-- Chaque étage se termine sur un Null nommé `out_<id_etage>` : `out_src_cloud`, `out_final`. C'est le contrat de câblage entre étages, vérifié par le validator.
-- `consumes` ne référence que des étages situés avant dans la liste. Le graphe est un DAG, jamais de cycle.
-- Au root : uniquement les containers d'étages, leurs nulls de sortie, l'op final `out_final`, et au besoin un null d'entrée. Rien d'autre. `budget.max_ops_root` est un plafond, pas une suggestion.
-- Opérateurs internes : préfixés par la fonction, pas par le type. `SrcSpectrum1`, `FbDecay1`, `ClampSignal1`. Jamais de nom par défaut type `moviefilein1`.
+- One `pipeline` stage in the spec = one `base` COMP at the root, named exactly like the stage
+  id: `src_cloud`, `fx_displace`, `render`.
+- Every stage terminates on a Null named `out_<stage_id>`: `out_src_cloud`, `out_final`. That
+  is the wiring contract between stages, checked by the validator.
+- `consumes` only references stages that come earlier in the list. The graph is a DAG, never a
+  cycle.
+- At the root: stage containers, their output nulls, the final `out_final`, and an input null
+  if needed. Nothing else. `budget.max_ops_root` is a ceiling, not a suggestion.
+- Internal operators are prefixed by function, not by type: `SrcSpectrum1`, `FbDecay1`,
+  `ClampSignal1`. Never a default name like `moviefilein1`.
 
 ## Layout
 
-- Flux de gauche à droite, dans l'ordre du pipeline. Un container, une colonne.
-- Positions alignées sur une grille de 200 unités, au moins une largeur de node entre containers.
-- Aucun fil ne traverse un node. Un câblage illisible est un bug de layout, pas une question de style.
-- Chaque container d'étage porte une annotation d'une ligne : sa responsabilité, recopiée du spec.
+- Signal flows left to right, in pipeline order. One container, one column.
+- Positions snap to a 200-unit grid, with at least one node width between containers.
+- No wire crosses a node. Unreadable wiring is a layout bug, not a matter of taste.
+- Every stage container carries a one-line annotation: its responsibility, copied from the
+  spec.
 
-## Paramètres custom
+## Custom parameters
 
-- Les paramètres exposés vivent sur la page `Custom` du container de leur étage, définis dans le spec : `name`, `style`, `range`, `default`, `help`.
-- Le `help` est obligatoire et décrit l'effet visible, pas le mécanisme. Un paramètre sans `help` ne passe pas la validation.
-- Les valeurs du spec sont la référence : le `default` installé doit être exactement celui du spec.
-- Pas de valeur magique en dur dans le réseau quand un paramètre existe : binder, pas dupliquer.
+- Exposed parameters live on the `Custom` page of their stage container, defined in the spec:
+  `name`, `style`, `range`, `default`, `help`.
+- `help` is mandatory and describes the visible effect, not the mechanism. A parameter without
+  help text does not pass validation.
+- The spec's values are the reference: the installed `default` must be exactly the spec's.
+- No magic value hardcoded in the network when a parameter exists: bind, do not duplicate.
 
-## Entrées
+## Inputs
 
-- Chaque entrée du spec déclare son `mock` (noise, file, constant). Le pipeline est construit et vérifié sur le mock : jamais sur "il faut brancher le vrai signal pour voir quelque chose".
-- Normalisation et clamp aux bornes déclarées (`range`) se font à l'entrée, dans l'étage de contrôle, jamais en aval. Le reste du réseau ne voit que du 0-1 propre.
+- Every input in the spec declares its `mock` (noise, file, constant). The pipeline is built
+  and verified on the mock, never on "you have to plug the real signal in to see anything".
+- Normalization and clamping to the declared `range` happen at the input, in the control
+  stage, never downstream. The rest of the network only ever sees clean 0-1.
 
-## Python TD
+## TD Python
 
-- TD Python est mono-thread. Jamais de manipulation d'objet TD depuis un thread worker.
-- Tout script de plus de quelques lignes est externalisé dans `projects/<slug>/scripts/` et référencé par chemin relatif. Jamais de chemin absolu, jamais de gros `execute` inline dans un DAT.
-- Python tiers via le venv du projet géré par TDPyEnvManager, déclaré dans `TDPyEnvManagerContext.yaml`. Un package non déclaré est un package qui n'existe pas.
-- Pas de `try/except` silencieux : une erreur avalée est une capture noire dans dix minutes.
-- Accès réseau par chemins relatifs (`me.parent()`, `op('./...')`), pas de `op('/project1/...')` en dur.
+- TD Python is single-threaded. Never touch a TD object from a worker thread.
+- Any script longer than a few lines is externalized under `projects/<slug>/scripts/` and
+  referenced by relative path. Never an absolute path, never a large inline `execute` in a DAT.
+- Third-party Python goes through the project venv managed by TDPyEnvManager, declared in
+  `TDPyEnvManagerContext.yaml`. An undeclared package is a package that does not exist.
+- No silent `try/except`: a swallowed error is a black capture ten minutes later.
+- Network access by relative paths (`me.parent()`, `op('./...')`), never a hardcoded
+  `op('/project1/...')`.
 
 ## GLSL
 
-- Un shader, un fichier, dans `projects/<slug>/glsl/`. Jamais de GLSL inline dans un paramètre.
+- One shader, one file, under `projects/<slug>/glsl/`. Never inline GLSL in a parameter.
 
-## Vérité et versioning
+## Truth and versioning
 
-- Le `.toe` est un binaire non diffable. À chaque build réussi : export TDXN dans `network/`, code dans `scripts/` et `glsl/`. Le spec est la source de vérité de l'intention, le TDXN celle de la structure.
-- Les captures de vérification vont dans `captures/`, nommées `YYYYMMDD-HHMMSS-<contexte>.png`.
-- `build-report.md` est écrit par le Builder à chaque build. Jamais à la main.
+- The `.toe` is a non-diffable binary. On every successful build: TDXN export into `network/`,
+  code into `scripts/` and `glsl/`. The spec is the source of truth for intent, the TDXN for
+  structure.
+- Verification captures go into `captures/`, named `YYYYMMDD-HHMMSS-<context>.png`.
+- `build-report.md` is written by the Builder on every build. Never by hand.
 
-## Vérification
+## Verification
 
-Aucun build n'est fini sans les quatre portes : capture avec verdict qualité `pass` (ni `is_black`, ni `is_flat`), `get_op_errors` vide sur toute la hiérarchie, fps au-dessus du plancher (`target_fps * fps_tolerance`) avec toutes les entrées actives, et chaque paramètre custom balayé min/mid/max sans erreur ni frame noire. Ensuite et seulement ensuite : export, rapport, capitalisation dans `lib/`.
+No build is finished without the four gates: a capture with a `pass` quality verdict (neither
+`is_black` nor `is_flat`), `get_op_errors` empty across the whole hierarchy, fps above the
+floor (`target_fps * fps_tolerance`) with every input active, and every custom parameter swept
+min/mid/max with no error and no black frame. Then, and only then: export, report, and
+capitalization into `lib/`.
+
+## Where to write what you learn
+
+The `create-operator`, `pop-networks`, `visual-aesthetics`, `td-api-reference`,
+`manage-annotations`, `parameter-design`, `externalize-operator`, `mcp-tools-reference`,
+`debug-operator`, `td-recovery`, `movie-export`, `multi-session-etiquette`,
+`merge-divergent-tox` and `create-extension` skills are **generated by Embody**: they carry a
+`sha:` comment at the top and are rewritten on every deploy. A correction written inside one of
+them is lost at the next deploy.
+
+So what you learn goes into the repo's own files:
+
+| Kind | File |
+|---|---|
+| An error, its verified cause, its fix | `knowledge/lessons.yaml` |
+| A style or structure rule that holds across projects | this file |
+| A role method (Architect, Builder) | `.claude/skills/td-architect` or `td-builder` |
+| A reusable component | `lib/` plus its entry in `lib/index.yaml` |
+
+## Annotations
+
+- After `create_annotation` **and** after any TDXN reimport, check `get_op_errors`: TDAnnotate's
+  internal widgets reference their host by a frozen path, and the operator's name can drift from
+  that path in either direction. Read the path the warning demands and rename the annotation to
+  exactly that name.
+- When several annotations share a parent, prefer `networkbox` mode: it does not have this flaw.
+
+## Point clouds rendered additively
+
+- A point's alpha must follow its brightness. A constant alpha of 1 means a dark point still
+  occludes the background: a black silhouette around the subject as soon as you composite
+  `over`.
+- Anything that decays in colour while keeping its alpha (trails, feedback) is added as **light**
+  on top of the composite, never as a participant in occlusion.
+- A solid volume rendered as points is ambiguous under rotation (kinetic depth ambiguity): it
+  needs normals, an outright removal of the back face, and dimming with distance. Attenuating is
+  not enough — it has to be removed.

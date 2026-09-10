@@ -1,53 +1,67 @@
 ---
 name: td-auto-improve
-description: Mémoire d'erreurs de TD Factory. Charger quand un agent identifie et vérifie la solution d'une erreur TD, Envoy ou build, et pour consulter ou mettre à jour knowledge/lessons.yaml. Fonctionne pour tout agent, tout harness, pas seulement Claude.
+description: TD Factory's error memory. Load when an agent identifies and verifies the fix for a TD, Envoy or build error, and to read or update knowledge/lessons.yaml. Works for any agent, any harness, not just Claude.
 ---
 
 # TD Auto Improve
 
-Une erreur résolue mais non enregistrée sera résolue une seconde fois par le prochain agent, avec un bug différent. `knowledge/lessons.yaml` est la mémoire partagée de l'usine : un fichier YAML brut, lisible et écrivable par n'importe quel agent, quel que soit son harness. Même statut que `lib/index.yaml`.
+An error that is solved but not recorded will be solved a second time by the next agent, with a
+different bug. `knowledge/lessons.yaml` is the factory's shared memory: a plain YAML file any
+agent can read and write, whatever its harness. Same status as `lib/index.yaml`.
 
-## Lire
+## Reading
 
-- Avant un build : grep sur les tags et familles d'opérateurs de tes étages.
-- En rencontrant une erreur : grep sur le message d'erreur exact. Les messages sont stockés verbatim pour que grep matche.
-- Une leçon qui ne s'applique plus (API changée, version différente) : le dire dans son champ `fix`, ne pas la supprimer silencieusement.
+- Before a build: grep on the tags and operator families of your stages.
+- On hitting an error: grep on the exact error message. Messages are stored verbatim so grep
+  matches.
+- A lesson that no longer applies (API changed, different version): say so in its `fix` field,
+  do not delete it silently.
 
-## Enregistrer
+## Recording
 
-Enregistre quand les trois conditions sont réunies :
+Record when all three conditions hold:
 
-1. une erreur ou un comportement inattendu est survenu ;
-2. la cause racine est identifiée, pas juste un contournement qui marche sans explication ;
-3. le fix est vérifié (capture, mesure, `get_op_errors` vide).
+1. an error or unexpected behaviour occurred;
+2. the root cause is identified, not just a workaround that happens to work;
+3. the fix is verified (capture, measurement, empty `get_op_errors`).
 
-N'enregistre pas : un fix non vérifié, une hypothèse, un problème propre à une machine (sauf si tu le tagues `env` en précisant le périmètre).
+Do not record: an unverified fix, a hypothesis, or a machine-specific problem (unless you tag it
+`env` and state the scope).
 
-### Protocole
+### Protocol
 
-1. **Dédup d'abord.** Grep `knowledge/lessons.yaml` sur les mots-clés du symptôme et de la cause. Si une entrée existe, mets-la à jour (`fix` complété, `hits +1`, `date` du jour) au lieu d'en créer une doublonne.
-2. **Écris l'entrée** au format du fichier, sans casser le YAML :
+1. **Dedupe first.** Grep `knowledge/lessons.yaml` for keywords from the symptom and the cause.
+   If an entry exists, update it (`fix` extended, `hits +1`, today's `date`) rather than adding a
+   duplicate.
+2. **Write the entry** in the file's format, without breaking the YAML:
 
 ```yaml
 - id: pop-attribute-copy-cook
   date: 2026-09-08
   hits: 1
-  context: brain-eeg-cloud, étage fx_displace
+  context: brain-eeg-cloud, fx_displace stage
   symptom: >
-    texte d'erreur exact ou comportement observable, verbatim
+    exact error text or observable behaviour, verbatim
   cause: >
-    cause racine identifiée
+    identified root cause
   fix: >
-    ce qui a corrigé, et comment ça a été vérifié
-  prevention: ce qu'il faut faire la prochaine fois pour ne pas la rencontrer
+    what fixed it, and how it was verified
+  prevention: what to do next time so you never meet it
   tags: [pop, attribute, cook]
   source: claude-code
 ```
 
-3. **Style** : phrases courtes, messages d'erreur verbatim, aucun récit. Français ou anglais, peu importe ; les messages d'erreur ne se traduisent pas.
-4. **Enregistre au moment où tu tiens la solution**, pas à la fin de la session. Une leçon écrite après coup est une leçon déformée.
-5. **Promotion.** Trois `hits` ou trois leçons du même pattern : fusionne-les et propose leur promotion en règle dans `.claude/rules/00-studio-conventions.md`, avec accord humain. La mémoire ne remplace pas les conventions, elle les alimente.
+3. **Style**: short sentences, error messages verbatim, no storytelling. Error messages are never
+   translated.
+4. **Record the moment you hold the solution**, not at the end of the session. A lesson written
+   after the fact is a distorted lesson.
+5. **Promotion.** Three `hits`, or three lessons of the same pattern: merge them and propose
+   promoting them into a rule in `.claude/rules/00-studio-conventions.md`, with human agreement.
+   The memory does not replace the conventions, it feeds them.
 
-## Portée multi-agents
+## Multi-agent scope
 
-Ce registre n'appartient à aucun harness. Tout agent (Claude Code, Codex, Cursor, opencode, ...) lit et écrit le même `knowledge/lessons.yaml`. Le point d'entrée universel du dépôt est `AGENTS.md`. Si ton harness charge automatiquement les skills `.claude/`, cette skill se charge seule ; sinon, lis ce fichier comme un document de workflow ordinaire et applique-le.
+This registry belongs to no harness. Any agent (Claude Code, Codex, Cursor, opencode, ...) reads
+and writes the same `knowledge/lessons.yaml`. The repo's universal entry point is `AGENTS.md`. If
+your harness auto-loads `.claude/` skills, this one loads itself; otherwise read this file as an
+ordinary workflow document and apply it.
