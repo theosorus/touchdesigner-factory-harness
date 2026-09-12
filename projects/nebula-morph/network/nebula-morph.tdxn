@@ -1,0 +1,956 @@
+format: tdxn
+version: '2.1'
+generator: Embody/6.2.42
+td_build: 099.2025.33070
+source_file: project.toe
+exported_at: '2026-09-09T17:35:53Z'
+network_path: /project1
+options:
+  include_dat_content: true
+  include_storage: true
+type_defaults:
+  baseCOMP:
+    size:
+    - 160
+    - 130
+  buttonCOMP:
+    parameters:
+      clone: =op.TDTox.op('defaultCOMPs/button')
+      repocomp: =me
+      resizecomp: =me
+  compositeTOP:
+    parameters:
+      operand: screen
+      size: input1
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  containerCOMP:
+    parameters:
+      repocomp: =me
+      resizecomp: =me
+  inPOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  inTOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  listCOMP:
+    parameters:
+      hscrollbar: false
+      repocomp: =me
+      resizecomp: =me
+    size:
+    - 160
+    - 130
+  nullCHOP:
+    parameters:
+      autoexportroot: =parent()
+    size:
+    - 130
+    - 90
+  nullPOP:
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  nullTOP:
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  outCHOP:
+    parameters:
+      autoexportroot: =parent()
+      label: =me.name
+    size:
+    - 130
+    - 90
+  outPOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  outTOP:
+    parameters:
+      label: =me.name
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  panelexecuteDAT:
+    parameters:
+      fromop: =parent()
+  parameterCHOP:
+    parameters:
+      autoexportroot: =parent()
+      builtin: true
+      custom: false
+      parameters: value0
+      renameto: v1
+    flags:
+    - viewer
+    size:
+    - 130
+    - 90
+  parameterexecuteDAT:
+    parameters:
+      fromop: =parent()
+  selectDAT:
+    parameters:
+      colexpr: =re.match('.*',me.inputCell.val) != None
+      colindexend: =me.inputTable.numCols - 1
+      rowexpr: =re.match('.*',me.inputCell.val) != None
+      rowindexend: =me.inputTable.numRows - 1
+    flags:
+    - viewer
+    size:
+    - 130
+    - 90
+  tableDAT:
+    size:
+    - 130
+    - 90
+  textCOMP:
+    parameters:
+      repocomp: =me
+      resizecomp: =me
+type: containerCOMP
+parameters:
+  w: 1280
+  h: 720
+  resizecomp: =me
+  repocomp: =me
+  top: ./out1
+  borderover: false
+  parentshortcut: Project
+flags:
+- viewer
+color:
+- 0.56
+- 0.56
+- 0.56
+operators:
+- name: render
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Paletteshift
+      style: Float
+      label: Palette Shift
+      startSection: true
+      clampMin: true
+      clampMax: true
+      help: Decalage des couleurs de la nebuleuse sur tout le spectre.
+  position:
+  - 1600
+  - -200
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  inputs:
+  - out_fx_morph
+  children:
+  - name: CamObs
+    type: cameraCOMP
+    parameters:
+      ty: 0.15
+      tz: 4.8
+      fog: exp
+      fogdensity: 0.08
+      fognear: 1
+      fogfar: 8
+      fogcolorr: 0.01
+      fogcolorg: 0.02
+      fogcolorb: 0.08
+      fogalpha: 0.25
+    position:
+    - 1200
+    - 0
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    children:
+    - name: file1
+      type: fileinPOP
+      parameters:
+        file: =app.samplesFolder + '/Geo/defcam.tog'
+      flags:
+      - display
+      - viewer
+      size:
+      - 130
+      - 90
+      color:
+      - 0.67
+      - 0.67
+      - 0.67
+  - name: InGeom
+    type: inPOP
+  - name: OutStage
+    type: outTOP
+    position:
+    - 2000
+    - 0
+    inputs:
+    - RenderScene
+  - name: GeoNebula
+    type: geometryCOMP
+    parameters:
+      ry: =absTime.seconds * 2
+      material: MatPoints
+    position:
+    - 400
+    - 0
+    size:
+    - 160
+    - 130
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - InGeom
+    children:
+    - name: InGeo
+      type: inPOP
+      flags:
+      - display
+      - render
+  - name: MatPoints
+    type: pointspriteMAT
+    parameters:
+      colormap: TexSprite
+      pointsize: =op('..').parent().op('src_particles').par.Pointsize.eval()
+      skelrootpath: =parent()
+      blending: true
+    position:
+    - 800
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: TexSprite
+    type: rampTOP
+    parameters:
+      dat: TexSprite_keys
+      color1: 0
+      color2: 0
+      color3: 0
+      color4: 0
+      type: radial
+    position:
+    - 800
+    - -400
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: RenderScene
+    type: renderTOP
+    parameters:
+      camera: CamObs
+      geometry: GeoNebula
+      resolutionw: 1920
+      resolutionh: 1080
+      format: rgba16float
+    position:
+    - 1600
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: TexSprite_keys
+    type: tableDAT
+    flags:
+    - viewer
+    - -showDocked
+    position:
+    - 800
+    - -520
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    dock: TexSprite
+    dat_content:
+    - - pos
+      - r
+      - g
+      - b
+      - a
+    - - '0'
+      - '1'
+      - '1'
+      - '1'
+      - '1'
+    - - '0.45'
+      - '0.85'
+      - '0.9'
+      - '1'
+      - '0.85'
+    - - '0.78'
+      - '0.18'
+      - '0.22'
+      - '0.4'
+      - '0.22'
+    - - '1'
+      - '0'
+      - '0'
+      - '0'
+      - '0'
+    dat_content_format: table
+- name: fx_morph
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Dispersion
+      style: Float
+      startSection: true
+      default: 0.5
+      max: 2.0
+      clampMin: true
+      clampMax: true
+      normMax: 2.0
+      help: Amplitude de dispersion des particules autour de la forme.
+    - name: Flowscale
+      style: Float
+      label: Flow Scale
+      default: 1
+      min: 0.2
+      max: 3.0
+      clampMin: true
+      clampMax: true
+      normMin: 0.2
+      normMax: 3.0
+      help: Taille des tourbillons de bruit, petit egale fin et nerve.
+  position:
+  - 800
+  - -200
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  inputs:
+  - out_ctrl_evolution
+  - out_src_particles
+  children:
+  - name: InCtrl
+    type: inCHOP
+    parameters:
+      label: =me.name
+      autoexportroot: =parent()
+    position:
+    - 0
+    - -400
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: OutStage
+    type: outPOP
+    position:
+    - 1200
+    - 0
+    inputs:
+    - MorphNoise
+  - name: MorphNoise
+    type: noisePOP
+    parameters:
+      seed: 5
+      period: =0.4 + 0.8 * op('..').par.Flowscale.eval()
+      amp0: =op('..').par.Dispersion.eval() * (0.05 + 0.95 * op('InCtrl')['chaos'])
+      t4d: =absTime.seconds * 0.12
+    position:
+    - 800
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - MorphShape
+  - name: MorphShape
+    type: glslPOP
+    parameters:
+      computedat: MorphShape_compute
+      outputattrs: '*'
+    sequences:
+      attr:
+      - name: color
+        numcomps: '4'
+      vec:
+      - name: u_shapetarget
+        valuex: =op('InCtrl')['shapetarget']
+      - name: u_morph
+        valuex: =op('InCtrl')['morph']
+      - name: u_chaos
+        valuex: =op('InCtrl')['chaos']
+      - name: u_palettephase
+        valuex: =op('InCtrl')['palettephase']
+      - name: u_paletteshift
+        valuex: =op('..').parent().op('render').par.Paletteshift.eval()
+    position:
+    - 400
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - InParticles
+  - name: InParticles
+    type: inPOP
+  - name: MorphShape_info
+    type: infoDAT
+    parameters:
+      op: MorphShape
+    flags:
+    - viewer
+    position:
+    - 475
+    - -120
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    dock: MorphShape
+    dat_read_only: true
+  - name: MorphShape_compute
+    type: textDAT
+    parameters:
+      language: glsl
+    flags:
+    - viewer
+    position:
+    - 325
+    - -120
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    dock: MorphShape
+    dat_content: "// fx_morph compute shader - nebula-morph\n// Positionne chaque particule sur la forme cible (sphere, tore,\
+      \ galaxie\n// spirale, grille d'onde) en fonction des signaux de controle, et calcule\n// la couleur par particule (palette\
+      \ + pseudo-profondeur radiale).\n// Les identifiants stables viennent de l'attribut Seed (src_particles).\n\nuniform\
+      \ float u_shapetarget;  // 0..1 sur 4 formes (index / 3)\nuniform float u_morph;        // 0..1 progression de transition\n\
+      uniform float u_chaos;        // 0..1 intensite du chaos\nuniform float u_palettephase; // 0..1 phase de palette\nuniform\
+      \ float u_paletteshift; // 0..1 decalage utilisateur de teinte\n\nconst float TAU = 6.28318530718;\nconst float PI =\
+      \ 3.14159265359;\n\nvec3 shapePos(int idx, float u, float v, float r1, float r2) {\n    if (idx == 0) {\n        //\
+      \ sphere\n        float th = u * TAU;\n        float ph = v * PI;\n        float R = 1.02 + 0.14 * (r1 - 0.5);\n   \
+      \     return R * vec3(cos(th) * sin(ph), 0.92 * cos(ph), sin(th) * sin(ph));\n    } else if (idx == 1) {\n        //\
+      \ tore\n        float th = u * TAU;\n        float ph = v * TAU;\n        float R = 0.82;\n        float r = 0.30 +\
+      \ 0.12 * (r2 - 0.5);\n        return vec3((R + r * cos(ph)) * cos(th), r * sin(ph), (R + r * cos(ph)) * sin(th));\n\
+      \    } else if (idx == 2) {\n        // galaxie spirale, 3 bras\n        float rad = 0.10 + 0.98 * sqrt(v);\n      \
+      \  float arm = floor(u * 3.0);\n        float ang = rad * 3.4 + arm * (TAU / 3.0) + (r1 - 0.5) * 0.9;\n        float\
+      \ thick = (r2 - 0.5) * 0.24 * (1.25 - rad * 0.45);\n        return vec3(rad * cos(ang), thick, rad * sin(ang));\n  \
+      \  }\n    // grille d'onde\n    float x = (u - 0.5) * 3.4;\n    float z = (v - 0.5) * 3.4;\n    float y = 0.40 * sin(x\
+      \ * 2.4) * cos(z * 2.4);\n    return vec3(x, y, z);\n}\n\nvec3 nebulaPalette(float t) {\n    vec3 deep = vec3(0.07,\
+      \ 0.16, 0.48);\n    vec3 violet = vec3(0.38, 0.20, 0.70);\n    vec3 warm = vec3(1.00, 0.56, 0.30);\n    t = clamp(t,\
+      \ 0.0, 1.0);\n    if (t < 0.62) return mix(deep, violet, t / 0.62);\n    return mix(violet, warm, (t - 0.62) / 0.38);\n\
+      }\n\nvec3 hueShift(vec3 color, float amount) {\n    const mat3 toYIQ = mat3(\n        0.299, 0.587, 0.114,\n       \
+      \ 0.596, -0.274, -0.322,\n        0.211, -0.523, 0.312\n    );\n    const mat3 toRGB = mat3(\n        1.0, 0.956, 0.621,\n\
+      \        1.0, -0.272, -0.647,\n        1.0, -1.106, 1.703\n    );\n    vec3 yiq = toYIQ * color;\n    float angle =\
+      \ atan(yiq.z, yiq.y) + amount * TAU;\n    float chroma = length(yiq.yz);\n    yiq.y = chroma * cos(angle);\n    yiq.z\
+      \ = chroma * sin(angle);\n    return clamp(toRGB * yiq, 0.0, 1.0);\n}\n\nvoid main() {\n    const uint id = TDIndex();\n\
+      \    if (id >= TDNumElements()) return;\n\n    vec3 src = TDIn_P();\n    float seed = TDIn_Seed();\n\n    // parametres\
+      \ stables par particule : u,v depuis la position source\n    // + decorrelation par la graine\n    float u = fract(src.x\
+      \ + 0.5 + seed * 0.61803398875);\n    float v = clamp(fract(src.y + 0.5 + seed * 0.38196601125), 0.0, 1.0);\n    float\
+      \ r1 = fract(seed * 127.1 + 0.37);\n    float r2 = fract(seed * 311.7 + 0.71);\n\n    int idxB = int(round(u_shapetarget\
+      \ * 3.0));\n    int idxA = (idxB + 3) % 4;\n    float t = smoothstep(0.0, 1.0, clamp(u_morph, 0.0, 1.0));\n    vec3\
+      \ pa = shapePos(idxA, u, v, r1, r2);\n    vec3 pb = shapePos(idxB, u, v, r1, r2);\n    vec3 pos = mix(pa, pb, t);\n\n\
+      \    // couleur : palette pilotee par la phase, pseudo-profondeur radiale,\n    // scintillement par graine module par\
+      \ le chaos\n    float f = fract(seed * 0.73 + u_palettephase);\n    float glow = 0.34 + 0.66 * exp(-length(pos) * 1.35);\n\
+      \    float tw = 0.65 + 0.35 * fract(seed * 43.7 + u_chaos * seed);\n    vec3 col = nebulaPalette(f) * glow * tw;\n \
+      \   col = hueShift(col, u_paletteshift);\n\n    P[id] = pos;\n    Color[id] = vec4(col, 1.0);\n}\n"
+    dat_content_format: text
+- name: composite
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Glow
+      style: Float
+      default: 0.8
+      max: 2.0
+      clampMin: true
+      clampMax: true
+      normMax: 2.0
+      help: Intensite du halo lumineux autour des zones denses.
+  position:
+  - 3200
+  - -200
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  inputs:
+  - out_render
+  - out_fx_trails
+  children:
+  - name: CompMix
+    type: compositeTOP
+    position:
+    - 400
+    - 0
+    inputs:
+    - InCurrent
+    - InTrails
+  - name: CompTone
+    type: tonemapTOP
+    position:
+    - 1200
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - CompBloom
+  - name: InTrails
+    type: inTOP
+    position:
+    - 0
+    - -400
+  - name: OutStage
+    type: outTOP
+    position:
+    - 1600
+    - 0
+    inputs:
+    - CompTone
+  - name: CompBloom
+    type: bloomTOP
+    parameters:
+      preblacklevel: 0.18
+      pregamma: 0.9
+      prebrightness: 1.4
+      minbloomradius: 0.1
+      maxbloomradius: 0.55
+      bloomthreshold: 0.25
+      bloomfill: 0.25
+      bloomintensity: =op('..').par.Glow.eval() * 0.2
+    position:
+    - 800
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - CompMix
+  - name: InCurrent
+    type: inTOP
+- name: fx_trails
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Persistence
+      style: Float
+      default: 0.88
+      max: 0.98
+      clampMin: true
+      clampMax: true
+      normMax: 0.98
+      help: Longueur des trainees lumineuses, haut egale trainees longues.
+  position:
+  - 2400
+  - -600
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  inputs:
+  - out_render
+  children:
+  - name: InRender
+    type: inTOP
+  - name: OutStage
+    type: outTOP
+    position:
+    - 1600
+    - 0
+    inputs:
+    - TrailDecay
+  - name: TrailMix
+    type: compositeTOP
+    position:
+    - 400
+    - 0
+    inputs:
+    - InRender
+    - TrailDecay
+  - name: TrailDecay
+    type: levelTOP
+    parameters:
+      brightness1: =op('..').par.Persistence.eval()
+    position:
+    - 1200
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - TrailFeedback
+  - name: TrailFeedback
+    type: feedbackTOP
+    parameters:
+      top: TrailMix
+    position:
+    - 800
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - InRender
+- name: out_final
+  type: nullTOP
+  flags:
+  - display
+  position:
+  - 3600
+  - -200
+  inputs:
+  - composite
+- name: out_render
+  type: nullTOP
+  position:
+  - 2000
+  - -200
+  inputs:
+  - render
+- name: out_fx_morph
+  type: nullPOP
+  position:
+  - 1200
+  - -200
+  inputs:
+  - fx_morph
+- name: out_fx_trails
+  type: nullTOP
+  position:
+  - 2800
+  - -600
+  inputs:
+  - fx_trails
+- name: src_particles
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Density
+      style: Float
+      startSection: true
+      default: 0.8
+      min: 0.1
+      clampMin: true
+      clampMax: true
+      normMin: 0.1
+      help: Quantite de particules visibles, baisser si le GPU sature.
+    - name: Pointsize
+      style: Float
+      label: Point Size
+      default: 1.5
+      min: 0.5
+      max: 4.0
+      clampMin: true
+      clampMax: true
+      normMin: 0.5
+      normMax: 4.0
+      help: Taille des points lumineux du nuage.
+  position:
+  - 0
+  - -200
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  children:
+  - name: SrcGen
+    type: pointgeneratorPOP
+    parameters:
+      shape: box
+      numpoints: =int(100000 * op('..').par.Density.eval())
+      seed: 7
+      normal: none
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+  - name: SrcSeed
+    type: randomPOP
+    parameters:
+      randomsize: '1'
+      seed: 13
+      outputattrscope: Seed
+    position:
+    - 400
+    - 0
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - SrcGen
+  - name: OutStage
+    type: outPOP
+    position:
+    - 800
+    - 0
+    inputs:
+    - SrcSeed
+- name: ctrl_evolution
+  type: baseCOMP
+  custom_pars:
+    Custom:
+    - name: Morphspeed
+      style: Float
+      label: Morph Speed
+      startSection: true
+      default: 0.4
+      min: 0.1
+      max: 2.0
+      clampMin: true
+      clampMax: true
+      normMin: 0.1
+      normMax: 2.0
+      help: Vitesse d'enchainement d'une forme a la suivante.
+    - name: Chaos
+      style: Float
+      default: 0.35
+      clampMin: true
+      clampMax: true
+      help: Agitation turbulente du nuage, de immobile a frenetique.
+  position:
+  - 0
+  - -600
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  children:
+  - name: OutStage
+    type: outCHOP
+    position:
+    - 400
+    - 0
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+    inputs:
+    - EvoSignal
+  - name: EvoSignal
+    type: constantCHOP
+    parameters:
+      rate: =me.time.rate
+      autoexportroot: =parent()
+    sequences:
+      const:
+      - name: shapetarget
+        value: =math.floor(absTime.seconds * op('..').par.Morphspeed.eval() / 8) % 4 / 3
+      - name: morph
+        value: =absTime.seconds * op('..').par.Morphspeed.eval() / 8 % 1
+      - name: chaos
+        value: =op('..').par.Chaos.eval()
+      - name: palettephase
+        value: =absTime.seconds * 0.008 % 1
+    size:
+    - 130
+    - 90
+    color:
+    - 0.67
+    - 0.67
+    - 0.67
+- name: out_src_particles
+  type: nullPOP
+  position:
+  - 400
+  - -200
+  inputs:
+  - src_particles
+- name: out_ctrl_evolution
+  type: nullCHOP
+  position:
+  - 400
+  - -600
+  color:
+  - 0.67
+  - 0.67
+  - 0.67
+  inputs:
+  - ctrl_evolution
+annotations:
+- name: annotate1
+  mode: annotate
+  title: src_particles
+  text: Population GPU stable, P + Seed, densite reglable.
+  position:
+  - -70
+  - -270
+  size:
+  - 670
+  - 370
+  color:
+  - 0.15
+  - 0.35
+  - 0.7
+  opacity: 0.22
+- name: annotate2
+  mode: annotate
+  title: ctrl_evolution
+  text: Cibles de forme, morph, chaos et phase palette 0..1.
+  position:
+  - -70
+  - -670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.35
+  - 0.2
+  - 0.65
+  opacity: 0.22
+- name: annotate3
+  mode: annotate
+  title: fx_morph
+  text: Morphing GLSL sphere, tore, galaxie, grille + bruit.
+  position:
+  - 730
+  - -270
+  size:
+  - 670
+  - 370
+  color:
+  - 0.35
+  - 0.18
+  - 0.65
+  opacity: 0.22
+- name: annotate4
+  mode: annotate
+  title: render
+  text: Points lumineux, palette radiale, camera et fog.
+  position:
+  - 1530
+  - -270
+  size:
+  - 670
+  - 370
+  color:
+  - 0.1
+  - 0.3
+  - 0.65
+  opacity: 0.22
+- name: annotate5
+  mode: annotate
+  title: fx_trails
+  text: Feedback TOP officiel avec decay Persistence.
+  position:
+  - 2330
+  - -670
+  size:
+  - 670
+  - 370
+  color:
+  - 0.55
+  - 0.16
+  - 0.42
+  opacity: 0.22
+- name: annotate6
+  mode: annotate
+  title: composite
+  text: Screen, bloom Glow et tone map ACES.
+  position:
+  - 3130
+  - -270
+  size:
+  - 670
+  - 370
+  color:
+  - 0.55
+  - 0.22
+  - 0.45
+  opacity: 0.22
+note: The six pipeline stages only. Embody and its externalizations table are out of this export.

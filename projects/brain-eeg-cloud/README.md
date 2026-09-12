@@ -4,7 +4,7 @@ The example project of TD Factory Harness. A surface point-cloud brain that brea
 focal points and can be turned with the mouse, driven by a simulated EEG signal. Six stages,
 sixteen exposed parameters, 60 fps at 1280x720.
 
-![Final render](../../docs/images/exemple-rendu-final.jpg)
+![Final render](../../docs/images/example-brain-activity.jpg)
 
 ## Read in this order
 

@@ -28,14 +28,13 @@ opencode.json
 briefs/
 projects/brain-eeg-cloud/TDPyEnvManagerContext.yaml
 
-# --- Publication : ce qui ne part pas sur GitHub ---
-# Les .toe de projet sont regenerables depuis network/*.tdxn et le spec.
+# --- Not published ---
+# Project .toe files regenerate from network/*.tdxn and the spec.
 projects/*/project.toe
 projects/*/project1/**/*.pyc
-# Modeles 3D tiers : chacun apporte les siens, on ne redistribue pas.
+projects/*/CrashAutoSave*
+# Third-party 3D models: bring your own, we do not redistribute.
 projects/*/assets/*.ply
 projects/*/assets/*.glb
 projects/*/assets/*.obj
 projects/*/assets/*.fbx
-# Second projet de mise au point, hors vitrine.
-projects/nebula-morph/

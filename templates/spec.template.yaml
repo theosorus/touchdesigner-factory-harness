@@ -32,13 +32,13 @@ output:
 # real signal or hardware exists.
 # ---------------------------------------------------------------------------
 inputs:
-  - name: eeg
+  - name: level
     kind: chop                # chop | top | dat | osc | midi | audio
     source: mock              # mock | osc | file | device
-    channels: [alpha, beta]
+    channels: [low, high]
     range: [0.0, 1.0]         # normalized at the boundary, always
     mock: noise               # noise | file | constant
-    notes: replace with the real stream once hardware is available
+    notes: replace with the real stream once the device is available
 
 # ---------------------------------------------------------------------------
 # ANCHORS. Real paths in the live project. The Builder fills the ones it
@@ -97,7 +97,7 @@ acceptance:
   - id: params_respond
     check: every custom parameter swept min/mid/max, no error and no black frame
   - id: mock_swap
-    check: switching input eeg from mock to osc changes the visual within 1 second
+    check: switching input level from mock to osc changes the visual within 1 second
 
 # ---------------------------------------------------------------------------
 # RISKS. What is most likely to fail, and the fallback.

@@ -64,8 +64,8 @@ on, the file is the contract.
 
 ## Measure, do not eyeball
 
-Four method traps, each of which cost a false conclusion in production. They are in
-`knowledge/lessons.yaml` with their verified cause, and they come back on every project:
+Four method traps, each of which silently produces a false conclusion. They come back on
+every project:
 
 - **`cook(force=True)` on the terminal TOP does not propagate upstream.** A parameter sweep that
   reads the output without cooking the upstream operators measures the previous image, and

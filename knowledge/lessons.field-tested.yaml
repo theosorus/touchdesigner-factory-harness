@@ -1,0 +1,155 @@
+# Field-tested TouchDesigner gotchas.
+#
+# These are NOT your project's memory -- knowledge/lessons.yaml is, and it ships empty.
+# This file is a starter pack: TouchDesigner and Embody behaviours met in production,
+# each with an identified cause and a verified fix, none of them tied to any particular
+# look or project. Copy the ones you care about into lessons.yaml, or delete this file.
+#
+# Verified on TouchDesigner 2025.33070.
+
+lessons:
+  - id: td-expression-needs-math-prefix
+    symptom: >
+      NameError in a parameter expression: name 'floor' is not defined. Same for 'sin'
+      and 'cos'.
+    cause: >
+      TouchDesigner parameter expressions do not expose the math module's functions as
+      bare names.
+    fix: qualify them -- math.floor, math.sin, math.cos.
+    tags: [expressions, python, parameters]
+
+  - id: level-top-contrast-default-one
+    symptom: >
+      A Level TOP outputs a perfectly uniform image (grey 0.5, std 0.0) while its input
+      varies normally and no bypass is set.
+    cause: >
+      The Level TOP's contrast parameter defaults to 1.0, not 0.0. Setting it to 0
+      removes every deviation from the mean.
+    fix: >
+      Keep contrast at 1.0 and stretch the range with inlow/inhigh instead. On the Level
+      TOP, neutral is 1.0 for contrast, brightness1, gamma1 and opacity -- compare
+      p.eval() to p.default before writing a supposedly neutral value.
+    tags: [top, level, parameters]
+
+  - id: pointsprite-sizing-model
+    symptom: >
+      Point sprites either tank the frame rate or ignore the size parameter entirely.
+    cause: >
+      With sizingmodel=perspective, pointsize is in WORLD units, so a value of 2 on a
+      2-unit-tall subject makes every sprite cover it (massive overdraw). With
+      sizingmodel=constatten, size comes from attensizenear/attensizefar interpolated
+      between attennear and attenfar, and pointsize is ignored.
+    fix: >
+      Pick the sizing model before wiring size, drive attensizenear/attensizefar from
+      the exposed parameter, and verify a sweep actually changes the image.
+    tags: [mat, pointsprite, performance]
+
+  - id: additive-alpha-punches-black-halo
+    symptom: >
+      Compositing an additive render over a background in over mode leaves an opaque
+      black silhouette around the subject.
+    cause: >
+      Points wrote alpha=1 regardless of brightness, and alpha accumulates like colour
+      under additive blending. Anything that decays in colour while keeping its alpha
+      (trails, feedback) does the same.
+    fix: >
+      Write alpha as the strongest channel of the emitted colour (premultiplied), and
+      add decaying layers as LIGHT on top of the composite rather than letting them
+      participate in occlusion.
+    tags: [top, composite, alpha, feedback]
+
+  - id: feedback-top-target-loop
+    symptom: "Cook dependency loop detected, on a Feedback TOP chain."
+    cause: >
+      A direct wire from the downstream composite back into the Feedback TOP creates a
+      regular cook cycle.
+    fix: >
+      Feed the current image into the Feedback TOP and name the downstream operator in
+      its Target TOP parameter instead of wiring it back.
+    tags: [feedback, top, loop]
+
+  - id: base-comp-data-proxies
+    symptom: >
+      "has no COMP connectors (not a COMP)" when wiring data across a base COMP
+      boundary.
+    cause: >
+      The COMP connectors are the top/bottom ones; regular data flow needs in/out
+      operators inside the COMP.
+    fix: >
+      Create a family-specific proxy inside the COMP (inPOP/outPOP, inCHOP/outCHOP,
+      inTOP/outTOP) and wire the regular connectors.
+    tags: [comp, connectors]
+
+  - id: force-cook-does-not-propagate-upstream
+    symptom: >
+      A min/mid/max parameter sweep reads identical image statistics for three very
+      different values: the parameter looks dead while it actually works.
+    cause: >
+      cook(force=True) on the terminal operator does not force the ones upstream, so
+      the read returns the previous texture. A feedback loop never advances under a
+      forced cook either.
+    fix: >
+      Cook the whole chain in dependency order before every read, and zero any
+      persistence while measuring differences. A COMP's gpuCookTimeMs is likewise a
+      cumulative average, not an instantaneous reading -- cross-check it against frame
+      time and fps.
+    tags: [cook, measurement, verification]
+
+  - id: pipeline-only-cooks-when-demanded
+    symptom: >
+      Measured fps looks perfect while the project is doing nothing, and
+      cookedThisFrame is false.
+    cause: >
+      TouchDesigner cooks on demand. With no pane, viewer or Perform window displaying
+      the output, the chain simply does not run.
+    fix: >
+      Display the output operator (or open the Perform window) before trusting any
+      performance measurement.
+    tags: [cook, performance, measurement]
+
+  - id: tdxn-export-including-embody-freezes-td
+    symptom: >
+      export_network on the project root with DAT content writes a multi-megabyte file,
+      then TouchDesigner stops responding: every tool times out, no logs, no crash dump,
+      process alive and burning CPU.
+    cause: >
+      The export walks into the whole interior of the Embody COMP (its extensions,
+      tagger, wizard and UI) with DAT content included.
+    fix: >
+      op.Embody.tags.add('tdxn_exclude') before any root export. The same export then
+      returns in milliseconds. Save the project before any large export, on principle.
+    tags: [tdxn, export, embody, freeze]
+
+  - id: annotation-internal-path-warning
+    symptom: >
+      "Invalid path for node .../annotate/annotation referenced by parameter Component",
+      on an annotation, sometimes appearing mirrored after a TDXN reimport.
+    cause: >
+      TDAnnotate's internal widgets reference their host by a frozen path, while
+      creation and TDXN reconstruction can each pick a different operator name.
+    fix: >
+      Read the path quoted in the warning and rename the annotation to exactly that
+      name. The networkbox mode does not have this flaw; prefer it when several
+      annotations share a parent.
+    tags: [annotation, warning, layout]
+
+  - id: execute-python-blocks-the-main-thread
+    symptom: FPS collapses after running code that sleeps or waits.
+    cause: >
+      Code sent to TouchDesigner runs on its main thread; blocking there stalls the cook
+      loop and corrupts any measurement taken around it.
+    fix: keep waits in the calling process, between calls, never inside TD.
+    tags: [python, threading, performance]
+
+  - id: large-shader-dat-write-over-mcp
+    symptom: >
+      A full rewrite of a GLSL DAT pushed through MCP crashed TouchDesigner with no
+      crash dump. Reproduced twice, both times shortly after a project save.
+    cause: >
+      NOT ESTABLISHED. The reproducible trigger is a large DAT write that forces a
+      shader recompile, close to a save or an extension reinit.
+    fix: >
+      Once the DAT is externalized, edit the file on disk instead: it is file-synced, so
+      TouchDesigner reloads it by itself. Verified: the same rewrite applied cleanly
+      through the file.
+    tags: [glsl, dat, crash, externalization]

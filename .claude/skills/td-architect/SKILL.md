@@ -26,8 +26,8 @@ move the expensive decisions ahead of the build.
    is authoritative. Also `knowledge/lessons.yaml`: lessons tagged `spec`, `budget` or `perf`
    tell you what has already been expensive, and they feed `risks`.
 3. **Scaffold.** If the folder does not exist: `python scripts/new_project.py <slug> --title "Readable Title"`.
-4. **Fill the spec.** From `templates/spec.template.yaml`, with `projects/brain-eeg-cloud/spec.yaml`
-   as the complete reference example. Every field filled: the validator rejects placeholders
+4. **Fill the spec.** From `templates/spec.template.yaml`, with any shipped
+   contract under `projects/` as a worked reference. Every field filled: the validator rejects placeholders
    (`my-project`, `Two to five sentences`, `responsibility: ...`, `{{`).
 5. **Validate.** `python scripts/validate_spec.py <slug>` until it exits 0. Every ERROR is a
    hole in the contract, every WARN a point to settle deliberately.

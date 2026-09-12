@@ -39,7 +39,7 @@ Do not record: an unverified fix, a hypothesis, or a machine-specific problem (u
 - id: pop-attribute-copy-cook
   date: 2026-09-08
   hits: 1
-  context: brain-eeg-cloud, fx_displace stage
+  context: <slug>, <stage> stage
   symptom: >
     exact error text or observable behaviour, verbatim
   cause: >
@@ -58,6 +58,13 @@ Do not record: an unverified fix, a hypothesis, or a machine-specific problem (u
 5. **Promotion.** Three `hits`, or three lessons of the same pattern: merge them and propose
    promoting them into a rule in `.claude/rules/00-studio-conventions.md`, with human agreement.
    The memory does not replace the conventions, it feeds them.
+
+## The starter pack
+
+`knowledge/lessons.field-tested.yaml` holds TouchDesigner behaviours verified in production
+and stripped of any project context. It is not the project's memory: copy an entry into
+`lessons.yaml` when you meet it for real, or ignore the file. Grep it too when an error
+lands -- it costs nothing and it may already hold the answer.
 
 ## Multi-agent scope
 

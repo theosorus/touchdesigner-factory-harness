@@ -1,0 +1,176 @@
+# TD Factory Harness build contract
+# Project: nebula-morph -- a GPU particle nebula in continuous metamorphosis.
+
+slug: nebula-morph
+title: Nebula Morph
+created: 2026-09-09
+td_build: "2025.33070"
+
+intent: >
+  A GPU particle nebula that morphs continuously from one shape into the next:
+  sphere, torus, spiral galaxy, wave grid. The cloud sits in turbulent noise,
+  leaves luminous trails and a soft halo. Observatory mood: dark depth dominated
+  by cold blues and violets with warm accents, slow and stately motion. A fully
+  autonomous piece for a single frontal 16:9 projection running continuously.
+
+references: []
+
+output:
+  mode: realtime
+  resolution: [1920, 1080]
+  target_fps: 60
+  fps_tolerance: 0.9
+  final_op: /project1/out_final
+
+inputs: []                    # fully autonomous: driven by time and parameters alone.
+
+anchors:
+  root: /project1
+
+budget:
+  max_ops_total: 50
+  max_ops_root: 15
+  max_gpu_cook_ms: 8
+  max_stages: 6
+
+pipeline:
+  - id: src_particles
+    responsibility: >
+      produce the GPU particle population with stable identifiers and base attributes
+      (source position, random seed)
+    consumes: []
+    produces: out_src_particles
+    reuse: null
+    params:
+      - name: Density
+        style: Float
+        range: [0.1, 1.0]
+        default: 0.8
+        help: how many particles are visible, lower it if the GPU saturates
+      - name: Pointsize
+        style: Float
+        range: [0.5, 4.0]
+        default: 1.5
+        help: size of the cloud's luminous points
+    budget_ops: 8
+
+  - id: ctrl_evolution
+    responsibility: >
+      drive the autonomous evolution -- current shape target, morph progress, chaos
+      intensity and palette phase -- as channels in 0 to 1
+    consumes: []
+    produces: out_ctrl_evolution
+    reuse: null
+    params:
+      - name: Morphspeed
+        style: Float
+        range: [0.1, 2.0]
+        default: 0.4
+        help: how fast one shape gives way to the next
+      - name: Chaos
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.35
+        help: turbulent agitation of the cloud, from still to frantic
+    budget_ops: 5
+
+  - id: fx_morph
+    responsibility: >
+      place every particle on the target shape according to the control signals and
+      scatter it with turbulent noise
+    consumes: [src_particles, ctrl_evolution]
+    produces: out_fx_morph
+    reuse: null
+    params:
+      - name: Dispersion
+        style: Float
+        range: [0.0, 2.0]
+        default: 0.5
+        help: how far particles scatter around the shape
+      - name: Flowscale
+        style: Float
+        range: [0.2, 3.0]
+        default: 1.0
+        help: size of the noise eddies, small reads as fine and veined
+    budget_ops: 10
+
+  - id: render
+    responsibility: >
+      render the particles as luminous points with colour driven by depth and the
+      palette phase
+    consumes: [fx_morph, ctrl_evolution]
+    produces: out_render
+    reuse: null
+    params:
+      - name: Paletteshift
+        style: Float
+        range: [0.0, 1.0]
+        default: 0.0
+        help: shifts the nebula's colours across the whole spectrum
+    budget_ops: 8
+
+  - id: fx_trails
+    responsibility: >
+      accumulate previous frames with decay to draw luminous trails behind the cloud
+    consumes: [render]
+    produces: out_fx_trails
+    reuse: null
+    params:
+      - name: Persistence
+        style: Float
+        range: [0.0, 0.98]
+        default: 0.88
+        help: length of the luminous trails, high means long trails
+    budget_ops: 5
+
+  - id: composite
+    responsibility: compose the current render, the trails and a final halo into the video output
+    consumes: [render, fx_trails]
+    produces: out_final
+    reuse: null
+    params:
+      - name: Glow
+        style: Float
+        range: [0.0, 2.0]
+        default: 0.8
+        help: intensity of the halo around dense areas
+    budget_ops: 6
+
+acceptance:
+  - id: renders
+    check: capture /project1/out_final returns quality pass
+  - id: no_errors
+    check: get_op_errors on /project1 recursive returns empty
+  - id: perf
+    check: fps >= 54 at 1920x1080 with the full pipeline cooking
+  - id: params_respond
+    check: the 9 custom parameters swept min mid max, no error and no black frame
+  - id: morph_visible
+    check: forcing ctrl_evolution to two different shape targets produces two captures with mean pixel difference above 2 percent
+  - id: trails_persist
+    check: capture at Persistence 0 differs from Persistence 0.88, and capture at Persistence 0.98 is not flat
+  - id: stability
+    check: fps after 5 minutes of continuous run is within 10 percent of the initial measurement
+
+risks:
+  - risk: the particle count may exceed the machine's GPU budget
+    fallback: >
+      Density caps the population internally and defaults to 0.8 rather than 1.0, with
+      the fps gate checked before anything else
+  - risk: the trails feedback loop may saturate toward white at high Persistence
+    fallback: Persistence caps at 0.98 in its range, checked by the trails_persist gate
+  - risk: >
+      the target shape functions may produce degenerate positions (NaN or origin) and a
+      black frame
+    fallback: >
+      every shape validated on a sample of particles before the render is wired, a
+      failing shape replaced by the parametric sphere
+  - risk: a custom shader for noise or colour may fail to compile on the machine
+    fallback: >
+      prefer native noise operators; any GLSL file goes into glsl/ and is checked with
+      get_op_errors before any other gate
+
+deliverables:
+  - project.toe
+  - network/nebula-morph.tdxn
+  - captures/final.png

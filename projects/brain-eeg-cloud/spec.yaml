@@ -211,7 +211,7 @@ pipeline:
       the tone map, and terminate on the final output
     consumes: [bg_aurora, render]
     produces: out_final
-    reuse: feedback_trails
+    reuse: null
     params:
       - name: Persistence
         style: Float
@@ -313,5 +313,5 @@ deliverables:
   - network/brain-eeg-cloud.tdxn
   - glsl/fx_pulse_compute.glsl
   - captures/final.png
-  - captures/20260909-HHMMSS-upright.png
+  - captures/<timestamp>-upright.png
   - build-report.md

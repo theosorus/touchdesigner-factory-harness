@@ -146,13 +146,11 @@ panel — only the real window can.
 
 ## Capitalization
 
-Two generic components exported to `lib/` and indexed: `signal_mock_osc` (normalized 0-1 signal
-source, mock or OSC, switchable without rewiring) and `aurora_backdrop` (animated backdrop with
-an editable palette and a bounded output). `feedback_trails` was reused from `lib/` as the spec
-required.
-
-Eight verified lessons were added to `knowledge/lessons.yaml` during this build, bringing it to
-twelve.
+The original run reused a trails component from a populated `lib/`, and capitalized two more
+into it. The repository ships `lib/` and `knowledge/lessons.yaml` **empty** by design -- those
+registries are each user's own -- so the contract here declares `reuse: null` and a fresh
+replay builds the trails in-stage. The TouchDesigner behaviours this build uncovered were
+generalized into `knowledge/lessons.field-tested.yaml`, stripped of any project context.
 
 ## What is left
 
