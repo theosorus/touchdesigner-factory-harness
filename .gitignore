@@ -31,6 +31,9 @@ projects/brain-eeg-cloud/TDPyEnvManagerContext.yaml
 # --- Not published ---
 # Project .toe files regenerate from network/*.tdxn and the spec.
 projects/*/project.toe
+# The seed is built on your machine by templates/SEED-SETUP.md, so that the Embody
+# version inside it is the one you chose rather than the one someone else shipped.
+templates/seed.toe
 projects/*/project1/**/*.pyc
 projects/*/CrashAutoSave*
 # Third-party 3D models: bring your own, we do not redistribute.
