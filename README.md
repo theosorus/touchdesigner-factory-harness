@@ -1,202 +1,134 @@
 # TouchDesigner Factory Harness
 
-A contract-first agent harness for TouchDesigner. One sentence in, a verified project out:
-two agent roles, a written contract between them, and a memory that grows with every mistake.
+A contract-first agent harness for TouchDesigner. You write a sentence, an agent writes a
+contract, you approve it, and a second agent builds and verifies the project against it.
 
-Clone it as `touchdesigner-factory-harness`; the short name used throughout the docs is
-**TD Factory Harness**.
+| | | |
+|---|---|---|
+| ![](docs/images/example-nebula.jpg) | ![](docs/images/example-brain-surface.jpg) | ![](docs/images/example-brain-activity.jpg) |
 
-![Final render of the example project](docs/images/exemple-rendu-final.jpg)
+*Three outputs built through the harness, from the two contracts in `projects/`.*
 
-*Example project `brain-eeg-cloud`: 215,601 surface points, an activity focus driven by a
-simulated EEG signal, 60 fps. The contract that produced it is 120 lines of YAML.*
+## Why
 
-## The problem
+Hand an agent a TouchDesigner project and no contract, and it improvises. It piles up
+operators, declares victory on a black frame, and forty turns later you have a network
+nobody can read and nothing has checked.
 
-An agent building TouchDesigner without a contract improvises. It piles up operators, and
-forty turns later you have a network nobody can read, that nobody can check against what you
-asked for, and that nothing has verified.
+The harness puts a written artifact in the middle, and a human at the gate.
 
-The harness splits the work in two and puts a written artifact in the middle.
-
-```
-        one sentence
-             |
-             v
-     [ Architect ]  --->  projects/<slug>/spec.yaml
-             |                      |
-     no MCP,                 you review it. This is the only
-     no TD open              moment you really have to think.
-                                    |
-                                    v
-                             [ Builder ]  --->  live TD session over Envoy MCP
-                                    |                        |
-                                    v                        v
-                            build-report.md         .toe + .tdxn + captures
+```mermaid
+flowchart LR
+    P["one sentence"] --> A["<b>Architect</b><br/>no MCP, no TD open"]
+    A --> S["<b>spec.yaml</b><br/>the contract"]
+    S --> H{"you<br/>review it"}
+    H -- "send back" --> A
+    H -- "approve" --> B["<b>Builder</b><br/>live TD over MCP"]
+    B --> O["verified project<br/>toe, tdxn, captures, report"]
 ```
 
-Splitting moves the cost of a mistake from the build to the review. A wrong spec is fixed in
-thirty seconds; a wrong build is forty minutes in the bin.
+A wrong spec costs you a 60-line review. A wrong build costs forty minutes. The split moves
+the cost of being wrong to the cheap side.
 
-## What it actually produces
+## Three things it enforces
 
-The example project started from this sentence:
+**A contract, before anything gets built.** `spec.yaml` pins resolution, target fps, inputs
+and their mocks, the pipeline stages, exposed parameters with mandatory help text, operator
+and GPU budgets, acceptance criteria, and risks with fallbacks. `validate_spec.py` refuses
+placeholders, incoherent stage graphs, budgets that do not add up, and criteria no tool call
+can check — "looks good" is rejected by design.
 
-> a point-cloud brain that comes alive with an EEG signal, dark but animated background
+**Gates, not vibes.** Every stage is verified before the next one starts, and the Builder
+measures rather than eyeballs.
 
-The Architect asked four questions (signal source, look, background, delivery context), wrote
-the contract, and stopped. The Builder built six stages, measured a baseline, captured after
-each stage, swept the sixteen exposed parameters and wrote its report.
+```mermaid
+flowchart TD
+    S["next stage from the spec"] --> BUILD["build it"]
+    BUILD --> E{"errors<br/>empty?"}
+    E -- "no" --> FIX["fix it, grep the error memory"]
+    FIX --> BUILD
+    E -- "yes" --> C{"capture<br/>not black, not flat?"}
+    C -- "no" --> FIX
+    C -- "yes" --> F{"fps above<br/>the floor?"}
+    F -- "no" --> STOP["stop and report:<br/>the budget is a ceiling"]
+    F -- "yes" --> S
+```
 
-| First delivery | After human feedback |
-|---|---|
-| ![](docs/images/exemple-premiere-livraison.jpg) | ![](docs/images/exemple-surface.jpg) |
+**Memory.** Two registries the agents read before building and write afterwards: `lib/` for
+components that worked, `knowledge/lessons.yaml` for errors whose cause was found and whose
+fix was verified. Both ship empty — they are your project's memory, not someone else's. A
+starter pack of TouchDesigner gotchas sits in `knowledge/lessons.field-tested.yaml`, to
+adopt or delete.
 
-Each stage's parameters are exposed in a native panel fed directly from the components'
-Custom pages: adding a parameter makes it appear without touching the panel.
+## Quick start
 
-![Parameter panel](docs/images/panneau-parametres.jpg)
-
-## Install
-
-Requirements: **TouchDesigner 2025.33070+**, **Python 3.11+** with PyYAML, and an MCP client
-(Claude Code, Codex, Cursor, opencode, ...).
+Requirements: TouchDesigner 2025.33070+, Python 3.11+ with PyYAML, and an MCP client
+(Claude Code, Codex, Cursor, opencode, …).
 
 ```bash
-git clone <this-repo> td-factory && cd td-factory
+git clone <this-repo> && cd touchdesigner-factory-harness
 pip install pyyaml
 ```
 
-Then follow `templates/SEED-SETUP.md`: install [Embody](https://github.com/dylanroscover/Embody)
-into a blank TouchDesigner project, run the Setup Wizard, save the result as
-`templates/seed.toe`. Five minutes, once. Every new project starts from that seed with Embody
-and Envoy already inside.
+Install [Embody](https://github.com/dylanroscover/Embody) into a blank TouchDesigner project
+and save it as `templates/seed.toe` — `templates/SEED-SETUP.md` walks the five steps, once,
+in about five minutes. Then:
 
 ```bash
-python scripts/check_env.py     # must print SEED READY
+python scripts/check_env.py     # want: SEED READY
 ```
 
-## Use
+Now describe what you want:
 
 ```
-/new-td-project a point-cloud brain reacting to an EEG signal
+/new-td-project a particle cloud that reacts to an audio signal
 ```
 
-The Architect scaffolds the folder, reads the library, asks at most three questions, writes
-`projects/<slug>/spec.yaml`, validates it, and stops so you can review.
+The Architect asks at most three questions, writes the contract, validates it, and stops.
+You read 60 lines of YAML. If it is right:
 
 ```
-/build-td-project brain-eeg-cloud
+/build-td-project my-slug
 ```
 
-The Builder launches TD, measures a performance baseline, builds stage by stage with a
-capture after each one, walks the acceptance criteria, externalizes the code, exports the
-TDXN and writes its report.
+The Builder measures a baseline, builds stage by stage with a capture after each, walks the
+acceptance criteria, externalizes the code, exports a diffable network, and writes its
+report.
 
-Both roles may run in **the same session** — that is cheaper in context. What is never
-skipped is the gate between them.
+## What a project looks like afterwards
 
-## The gate
-
-```bash
-python scripts/validate_spec.py <slug>
+```
+projects/<slug>/
+├── spec.yaml          the contract, source of truth for intent
+├── network/*.tdxn     the network as readable YAML, source of truth for structure
+├── glsl/, scripts/    externalized shaders and code, diffable
+├── captures/          timestamped visual evidence, one per pass
+├── build-report.md    what was built, measured, and where it deviated
+└── project.toe        binary, regenerable from everything above
 ```
 
-It rejects a spec with leftover placeholders, an inconsistent stage graph, budgets that do
-not add up, a parameter without help text, fewer than three acceptance criteria, a criterion
-no tool call can check ("looks good"), or an empty risks section. Exit 0 means the build is
-allowed.
+The `.toe` is the artifact; the rest is what makes it reviewable.
 
-Plus an explicit human approval. Silence is not approval, and an agent never approves its own
-spec — that is the entire reason the two roles exist separately.
+## Two worked examples
 
-## The file that matters
+| Project | What it shows |
+|---|---|
+| [`brain-eeg-cloud`](projects/brain-eeg-cloud) | driven by an external signal, with an asset to load, mouse interaction and a control panel |
+| [`nebula-morph`](projects/nebula-morph) | the opposite case: no input at all, the piece drives itself from time |
 
-`projects/<slug>/spec.yaml`. Everything else is plumbing. It pins the decisions that are
-expensive to change later:
-
-- `output`: mode, resolution, target fps and tolerance
-- `inputs`: every input with its mock, so the build never depends on hardware
-- `pipeline`: three to six stages, one responsibility each, an acyclic graph
-- `params`: what is exposed, with range, default and mandatory help text
-- `budget`: operator and GPU cook ceilings, not suggestions
-- `acceptance`: at least three criteria, every one checkable by a tool call
-- `risks`: never empty, each with its fallback
-
-`projects/brain-eeg-cloud/spec.yaml` is a complete, valid example — read it before writing
-one.
-
-## The four verification gates
-
-No build is finished without: a capture with a `pass` quality verdict (neither black nor
-flat), `get_op_errors` empty across the whole hierarchy, fps above the floor with every input
-active, and every parameter swept min/mid/max with no error and no black frame.
-
-The Builder measures, it does not eyeball. That distinction is not cosmetic: a
-`cook(force=True)` on the terminal TOP does not propagate upstream, a feedback loop does not
-flush itself, and a pipeline nothing displays does not cook at all. Each of those three traps
-produced a false conclusion in production before it was written down.
-
-## The library
-
-`lib/index.yaml`. Every generic component that worked is indexed with its GPU cost, the TD
-build it was tested on, and its caveats. The Builder reads it before creating anything. That
-is what makes the tenth project an assembly job rather than a rebuild.
-
-## The error memory
-
-`knowledge/lessons.yaml`. Every error whose root cause is identified and whose fix is verified
-becomes a lesson, greppable by tag and by exact message. Agents read it before building and on
-every error, and write to it the moment they hold a verified solution.
-
-A sample of what it holds today, all met in production:
-
-- a TDXN export of the root pulls in the whole inside of Embody and **freezes TouchDesigner**
-  (6.6 MB of YAML); the fix is one tag
-- the Level TOP's `contrast` defaults to **1.0**, not 0: setting it to zero flattens the image
-  to uniform grey
-- in `perspective` mode, a Point Sprite MAT's `pointsize` is in **world units**: 131k sprites
-  at 4 fps
-- the Mouse In CHOP's `wheel` channel **accumulates since TouchDesigner opened**
-- a `Color` attribute loaded from a file collides with a GLSL POP's `Color` output and breaks
-  compilation
+Each ships its contract, its network, its shaders, its build report and its captures. Read a
+`spec.yaml` before writing your own — it is faster than reading the schema.
 
 ## Any agent, not just Claude
 
-This repo is not tied to Claude. `AGENTS.md` is the canonical entry point for any agent: same
-roles, same rules, same files. Envoy is a standard MCP server, so any MCP client can drive it.
-The library and the error memory are plain files, shared across harnesses.
+`AGENTS.md` is the canonical entry point: same roles, same rules, same files, whatever your
+harness. Envoy is a standard MCP server, so any MCP client can drive it, and both registries
+are plain YAML that every agent reads and writes.
 
-## Layout
+## Credits
 
-```
-AGENTS.md                    canonical rules, any agent
-ARCHITECTURE.md              the model and the reasoning
-.claude/rules/               conventions, always loaded
-.claude/skills/              td-architect, td-builder, td-auto-improve (+ Embody's skills)
-scripts/validate_spec.py     the gate
-scripts/new_project.py       the scaffold
-templates/spec.template.yaml the contract schema
-lib/                         reusable components + index
-knowledge/lessons.yaml       error memory
-projects/<slug>/             one project: spec, network, scripts, glsl, captures, report
-```
+Built on [Embody and Envoy](https://github.com/dylanroscover/Embody) by Dylan Roscover
+(MIT): version-controlled externalization of TouchDesigner operators, and the MCP server
+that makes a live session addressable. This repo would not exist without them.
 
-## What is not versioned
-
-Project `.toe` files (regenerable from `network/*.tdxn` and the spec) and third-party 3D
-models. The example project replays from its contract; its brain mesh comes from Sketchfab
-and is not redistributed here. Bring your own:
-`projects/brain-eeg-cloud/scripts/glb_to_ply.py` converts any `.glb` into a surface point
-cloud TouchDesigner can read.
-
-## Credits and licence
-
-TD Factory Harness is MIT licensed (see `LICENSE`).
-
-The seed embeds [Embody and Envoy](https://github.com/dylanroscover/Embody) by Dylan Roscover,
-also MIT: version-controlled externalization of TD operators, and an MCP server. This repo
-would not exist without them.
-
-The example project's images are renders of a third-party brain mesh. If you republish those
-captures, check the source model's licence.
+MIT licensed — see `LICENSE`.

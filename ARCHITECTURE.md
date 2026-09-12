@@ -9,18 +9,15 @@ The problem with an agent building TouchDesigner on its own is that it has no co
 improvises, piles up operators, and forty turns later you have a network nobody can read. The
 fix is to cut the work in two, with a written artifact in between.
 
-```
-human prompt
-    |
-    v
-[Agent 1: Architect]  ------> projects/<slug>/spec.yaml   (contract, reviewed by you)
-    |                                    |
-   no MCP,                               |
-   no TD open                            v
-                            [Agent 2: Builder] -----> live TD session over Envoy
-                                         |                     |
-                                         v                     v
-                              build-report.md          project.toe + .tdxn + captures
+```mermaid
+flowchart LR
+    P["human prompt"] --> A["<b>Architect</b><br/>no MCP, no TD open"]
+    A --> S["projects/&lt;slug&gt;/spec.yaml<br/>the contract"]
+    S --> H{"reviewed<br/>by you"}
+    H -- "send back" --> A
+    H -- "approved" --> B["<b>Builder</b><br/>live TD over Envoy"]
+    B --> R["build-report.md"]
+    B --> O["project.toe + tdxn + captures"]
 ```
 
 `spec.yaml` is the checkpoint. Until it is approved, nothing is built. Once approved it
