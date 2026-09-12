@@ -1,7 +1,10 @@
-# TD Factory
+# TouchDesigner Factory Harness
 
-One sentence in, a working TouchDesigner project out. Two agent roles, a written contract
-between them, and a memory that grows with every mistake.
+A contract-first agent harness for TouchDesigner. One sentence in, a verified project out:
+two agent roles, a written contract between them, and a memory that grows with every mistake.
+
+Clone it as `touchdesigner-factory-harness`; the short name used throughout the docs is
+**TD Factory Harness**.
 
 ![Final render of the example project](docs/images/exemple-rendu-final.jpg)
 
@@ -14,7 +17,7 @@ An agent building TouchDesigner without a contract improvises. It piles up opera
 forty turns later you have a network nobody can read, that nobody can check against what you
 asked for, and that nothing has verified.
 
-TD Factory splits the work in two and puts a written artifact in the middle.
+The harness splits the work in two and puts a written artifact in the middle.
 
 ```
         one sentence
@@ -189,7 +192,7 @@ cloud TouchDesigner can read.
 
 ## Credits and licence
 
-TD Factory is MIT licensed (see `LICENSE`).
+TD Factory Harness is MIT licensed (see `LICENSE`).
 
 The seed embeds [Embody and Envoy](https://github.com/dylanroscover/Embody) by Dylan Roscover,
 also MIT: version-controlled externalization of TD operators, and an MCP server. This repo

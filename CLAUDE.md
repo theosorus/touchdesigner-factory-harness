@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-TD Factory: a two agent pipeline that turns a prompt into a working TouchDesigner project.
+TD Factory Harness: a two agent pipeline that turns a prompt into a working TouchDesigner project.
 
 The canonical instruction set for every agent (Claude included) is `AGENTS.md` at the repo
 root. Read it and follow it. Les deux roles peuvent tourner dans la meme session : seule la porte compte (validator a 0 + validation humaine ecrite). Quick map: roles and hard rules in `AGENTS.md`, conventions in

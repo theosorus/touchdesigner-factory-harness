@@ -1,6 +1,6 @@
 # Brain EEG Cloud
 
-TD Factory's example project. A surface point-cloud brain that breathes, lights up in moving
+The example project of TD Factory Harness. A surface point-cloud brain that breathes, lights up in moving
 focal points and can be turned with the mouse, driven by a simulated EEG signal. Six stages,
 sixteen exposed parameters, 60 fps at 1280x720.
 

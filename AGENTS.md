@@ -1,6 +1,6 @@
 # AGENTS.md
 
-TD Factory: a two agent pipeline that turns a prompt into a working TouchDesigner project.
+TD Factory Harness: a two agent pipeline that turns a prompt into a working TouchDesigner project.
 This is the canonical instruction set for **any** coding agent (Claude Code, Codex, Cursor,
 opencode, ...), not just Claude. Read `ARCHITECTURE.md` for the full model and the reasoning
 behind it.

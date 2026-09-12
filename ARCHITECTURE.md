@@ -1,4 +1,4 @@
-# TD Factory: architecture
+# TD Factory Harness: architecture
 
 A factory for TouchDesigner projects driven by two agent roles. You write a sentence, you get
 a running `.toe`, version-controlled and verified.

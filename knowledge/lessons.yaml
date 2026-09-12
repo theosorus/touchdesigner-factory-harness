@@ -1,4 +1,4 @@
-# TD Factory's error memory, shared across every agent and every harness.
+# TD Factory Harness error memory, shared across every agent and every harness.
 # An entry lands here only when the root cause is identified and the fix is verified.
 # Full protocol: .claude/skills/td-auto-improve/SKILL.md
 #

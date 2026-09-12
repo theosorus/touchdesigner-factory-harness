@@ -1,4 +1,4 @@
-# TD Factory studio conventions
+# TD Factory Harness studio conventions
 
 Loaded in every session. They are what makes two projects built three months apart read the
 same way. A build that violates them is not finished.

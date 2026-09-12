@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scaffold a new TD Factory project folder.
+"""Scaffold a new TD Factory Harness project folder.
 
 Usage:
     python scripts/new_project.py <slug> [--title "Human title"]

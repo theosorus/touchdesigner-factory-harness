@@ -1,6 +1,6 @@
 ---
 name: td-builder
-description: TD Factory's Builder role. Execute a validated spec.yaml against a live TouchDesigner session over Envoy MCP, all the way to the acceptance criteria. Use when the spec passes the validator AND a human approved it, and the TD seed with Embody + Envoy is ready.
+description: The Builder role of TD Factory Harness. Execute a validated spec.yaml against a live TouchDesigner session over Envoy MCP, all the way to the acceptance criteria. Use when the spec passes the validator AND a human approved it, and the TD seed with Embody + Envoy is ready.
 ---
 
 # TD Builder

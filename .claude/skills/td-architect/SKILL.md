@@ -1,6 +1,6 @@
 ---
 name: td-architect
-description: TD Factory's Architect role. Turn a human prompt into an executable spec.yaml, mechanically validated and reviewed by a human. No MCP access, no TouchDesigner open. Use whenever a new TD project is requested or an existing spec must be revised.
+description: The Architect role of TD Factory Harness. Turn a human prompt into an executable spec.yaml, mechanically validated and reviewed by a human. No MCP access, no TouchDesigner open. Use whenever a new TD project is requested or an existing spec must be revised.
 ---
 
 # TD Architect

@@ -1,6 +1,6 @@
 ---
 name: td-auto-improve
-description: TD Factory's error memory. Load when an agent identifies and verifies the fix for a TD, Envoy or build error, and to read or update knowledge/lessons.yaml. Works for any agent, any harness, not just Claude.
+description: The error memory of TD Factory Harness. Load when an agent identifies and verifies the fix for a TD, Envoy or build error, and to read or update knowledge/lessons.yaml. Works for any agent, any harness, not just Claude.
 ---
 
 # TD Auto Improve

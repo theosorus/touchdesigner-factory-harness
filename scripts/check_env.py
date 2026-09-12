@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Environment gate for TD Factory.
+"""Environment gate for TD Factory Harness.
 
 Usage:
     python scripts/check_env.py
