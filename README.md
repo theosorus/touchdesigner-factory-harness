@@ -42,16 +42,12 @@ can check — "looks good" is rejected by design.
 measures rather than eyeballs.
 
 ```mermaid
-flowchart TD
-    S["next stage from the spec"] --> BUILD["build it"]
-    BUILD --> E{"errors<br/>empty?"}
-    E -- "no" --> FIX["fix it, grep the error memory"]
-    FIX --> BUILD
-    E -- "yes" --> C{"capture<br/>not black, not flat?"}
-    C -- "no" --> FIX
-    C -- "yes" --> F{"fps above<br/>the floor?"}
-    F -- "no" --> STOP["stop and report:<br/>the budget is a ceiling"]
-    F -- "yes" --> S
+flowchart LR
+    S["stage"] --> B["build"] --> E{"errors?"} -- none --> C{"capture?"} -- passes --> F{"fps?"}
+    F -- "above floor" --> S
+    E -- some --> X["fix"] --> B
+    C -- "black or flat" --> X
+    F -- "below floor" --> STOP["stop, report"]
 ```
 
 **Memory.** Two registries the agents read before building and write afterwards: `lib/` for
